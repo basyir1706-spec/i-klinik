@@ -101,9 +101,18 @@ ini_set('display_errors', 1);
         <?php
         // Check 2: MySQL Connection
         $mysqlOk = false;
-        $conn = @new mysqli('localhost', 'root', '');
-        if ($conn && !$conn->connect_error) {
-            $mysqlOk = true;
+        $dbHost = getenv('DB_HOST') ?: 'localhost';
+        $dbUser = getenv('DB_USER') ?: 'root';
+        $dbPass = getenv('DB_PASS') ?: '';
+
+        try {
+            $conn = new mysqli($dbHost, $dbUser, $dbPass);
+            if ($conn && !$conn->connect_error) {
+                $mysqlOk = true;
+            }
+        } catch (Exception $e) {
+            // Connection failed
+            $conn = null;
         }
         ?>
         <div class="check-item <?php echo $mysqlOk ? 'success' : 'error'; ?>">
