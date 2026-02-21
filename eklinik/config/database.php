@@ -4,10 +4,10 @@
  * i-Klinik Politeknik Besut
  */
 
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'eklinik');
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASS', getenv('DB_PASS') ?: '');
+define('DB_NAME', getenv('DB_NAME') ?: 'eklinik');
 
 // Create connection with error handling
 function getDBConnection() {
@@ -15,14 +15,14 @@ function getDBConnection() {
     
     if ($conn->connect_error) {
         error_log("MySQL connection failed: " . $conn->connect_error);
-        return null;
+        throw new Exception("MySQL connection failed: " . $conn->connect_error);
     }
     
     // Select database
     $conn->select_db(DB_NAME);
     if ($conn->error) {
         error_log("Database '" . DB_NAME . "' not found. Please import the SQL file first.");
-        return null;
+        throw new Exception("Database '" . DB_NAME . "' not found. Please import the SQL file first.");
     }
     
     $conn->set_charset("utf8mb4");
