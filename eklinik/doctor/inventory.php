@@ -15,110 +15,115 @@ $conn = getDBConnection();
 
 // Handle approve/reject stock loan
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['approve_loan'])) {
-        $loanId = (int)$_POST['loan_id'];
-        $itemId = (int)$_POST['item_id'];
-        $quantity = (int)$_POST['quantity'];
-        
-        // Update loan status
-        $stmt = $conn->prepare("UPDATE stock_loans SET status = 'approved', approved_by = ? WHERE id = ?");
-        $stmt->bind_param("ii", $userId, $loanId);
-        $stmt->execute();
-        
-        // Deduct from inventory
-        $stmt = $conn->prepare("UPDATE inventory_items SET stock_quantity = stock_quantity - ? WHERE id = ?");
-        $stmt->bind_param("ii", $quantity, $itemId);
-        $stmt->execute();
-        
-        $success = 'Permohonan pinjaman diluluskan!';
-        
-        // Get loan info for notification
-        $stmt = $conn->prepare("SELECT user_id FROM stock_loans WHERE id = ?");
-        $stmt->bind_param("i", $loanId);
-        $stmt->execute();
-        $loanUser = $stmt->get_result()->fetch_assoc();
-        createNotification($loanUser['user_id'], 'Pinjaman Stok Diluluskan', 'Permohonan pinjaman stok first aid anda telah diluluskan. Sila ambil di klinik.', 'inventory');
-    }
-    
-    if (isset($_POST['reject_loan'])) {
-        $loanId = (int)$_POST['loan_id'];
-        $reason = sanitize($_POST['rejection_reason']);
-        
-        $stmt = $conn->prepare("UPDATE stock_loans SET status = 'rejected', approved_by = ?, notes = ? WHERE id = ?");
-        $stmt->bind_param("isi", $userId, $reason, $loanId);
-        $stmt->execute();
-        
-        $success = 'Permohonan pinjaman ditolak';
-        
-        // Get loan info for notification
-        $stmt = $conn->prepare("SELECT user_id FROM stock_loans WHERE id = ?");
-        $stmt->bind_param("i", $loanId);
-        $stmt->execute();
-        $loanUser = $stmt->get_result()->fetch_assoc();
-        createNotification($loanUser['user_id'], 'Pinjaman Stok Ditolak', 'Permohonan pinjaman stok anda telah ditolak. Sebab: ' . $reason, 'inventory');
-    }
-    
-    if (isset($_POST['return_item'])) {
-        $loanId = (int)$_POST['loan_id'];
-        $itemId = (int)$_POST['item_id'];
-        $quantity = (int)$_POST['quantity'];
-        
-        // Update loan status
-        $stmt = $conn->prepare("UPDATE stock_loans SET status = 'returned' WHERE id = ?");
-        $stmt->bind_param("i", $loanId);
-        $stmt->execute();
-        
-        // Add back to inventory
-        $stmt = $conn->prepare("UPDATE inventory_items SET stock_quantity = stock_quantity + ? WHERE id = ?");
-        $stmt->bind_param("ii", $quantity, $itemId);
-        $stmt->execute();
-        
-        $success = 'Item telah dipulangkan!';
-    }
-    
-    if (isset($_POST['update_item'])) {
-        $itemId = (int)$_POST['item_id'];
-        $name = sanitize($_POST['name']);
-        $description = sanitize($_POST['description']);
-        $stockQuantity = (int)$_POST['stock_quantity'];
-        $minimumStock = (int)$_POST['minimum_stock'];
-        $unit = sanitize($_POST['unit']);
-        
-        // Determine status
-        $status = 'available';
-        if ($stockQuantity == 0) {
-            $status = 'out_of_stock';
-        } elseif ($stockQuantity < $minimumStock) {
-            $status = 'low_stock';
+    // CSRF Check
+    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+        $error = 'Ralat keselamatan: Token CSRF tidak sah.';
+    } else {
+        if (isset($_POST['approve_loan'])) {
+            $loanId = (int)$_POST['loan_id'];
+            $itemId = (int)$_POST['item_id'];
+            $quantity = (int)$_POST['quantity'];
+
+            // Update loan status
+            $stmt = $conn->prepare("UPDATE stock_loans SET status = 'approved', approved_by = ? WHERE id = ?");
+            $stmt->bind_param("ii", $userId, $loanId);
+            $stmt->execute();
+
+            // Deduct from inventory
+            $stmt = $conn->prepare("UPDATE inventory_items SET stock_quantity = stock_quantity - ? WHERE id = ?");
+            $stmt->bind_param("ii", $quantity, $itemId);
+            $stmt->execute();
+
+            $success = 'Permohonan pinjaman diluluskan!';
+
+            // Get loan info for notification
+            $stmt = $conn->prepare("SELECT user_id FROM stock_loans WHERE id = ?");
+            $stmt->bind_param("i", $loanId);
+            $stmt->execute();
+            $loanUser = $stmt->get_result()->fetch_assoc();
+            createNotification($loanUser['user_id'], 'Pinjaman Stok Diluluskan', 'Permohonan pinjaman stok first aid anda telah diluluskan. Sila ambil di klinik.', 'inventory');
         }
         
-        $stmt = $conn->prepare("UPDATE inventory_items SET name = ?, description = ?, stock_quantity = ?, minimum_stock = ?, unit = ?, status = ? WHERE id = ?");
-        $stmt->bind_param("ssiiisi", $name, $description, $stockQuantity, $minimumStock, $unit, $status, $itemId);
-        $stmt->execute();
-        
-        $success = 'Item inventory berjaya dikemaskini!';
-    }
-    
-    if (isset($_POST['add_item'])) {
-        $categoryId = (int)$_POST['category_id'];
-        $name = sanitize($_POST['name']);
-        $description = sanitize($_POST['description']);
-        $stockQuantity = (int)$_POST['stock_quantity'];
-        $minimumStock = (int)$_POST['minimum_stock'];
-        $unit = sanitize($_POST['unit']);
-        
-        $status = 'available';
-        if ($stockQuantity == 0) {
-            $status = 'out_of_stock';
-        } elseif ($stockQuantity < $minimumStock) {
-            $status = 'low_stock';
+        if (isset($_POST['reject_loan'])) {
+            $loanId = (int)$_POST['loan_id'];
+            $reason = sanitize($_POST['rejection_reason']);
+
+            $stmt = $conn->prepare("UPDATE stock_loans SET status = 'rejected', approved_by = ?, notes = ? WHERE id = ?");
+            $stmt->bind_param("isi", $userId, $reason, $loanId);
+            $stmt->execute();
+
+            $success = 'Permohonan pinjaman ditolak';
+
+            // Get loan info for notification
+            $stmt = $conn->prepare("SELECT user_id FROM stock_loans WHERE id = ?");
+            $stmt->bind_param("i", $loanId);
+            $stmt->execute();
+            $loanUser = $stmt->get_result()->fetch_assoc();
+            createNotification($loanUser['user_id'], 'Pinjaman Stok Ditolak', 'Permohonan pinjaman stok anda telah ditolak. Sebab: ' . $reason, 'inventory');
         }
         
-        $stmt = $conn->prepare("INSERT INTO inventory_items (category_id, name, description, stock_quantity, minimum_stock, unit, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("issiiis", $categoryId, $name, $description, $stockQuantity, $minimumStock, $unit, $status);
-        $stmt->execute();
+        if (isset($_POST['return_item'])) {
+            $loanId = (int)$_POST['loan_id'];
+            $itemId = (int)$_POST['item_id'];
+            $quantity = (int)$_POST['quantity'];
+
+            // Update loan status
+            $stmt = $conn->prepare("UPDATE stock_loans SET status = 'returned' WHERE id = ?");
+            $stmt->bind_param("i", $loanId);
+            $stmt->execute();
+
+            // Add back to inventory
+            $stmt = $conn->prepare("UPDATE inventory_items SET stock_quantity = stock_quantity + ? WHERE id = ?");
+            $stmt->bind_param("ii", $quantity, $itemId);
+            $stmt->execute();
+
+            $success = 'Item telah dipulangkan!';
+        }
         
-        $success = 'Item inventory berjaya ditambah!';
+        if (isset($_POST['update_item'])) {
+            $itemId = (int)$_POST['item_id'];
+            $name = sanitize($_POST['name']);
+            $description = sanitize($_POST['description']);
+            $stockQuantity = (int)$_POST['stock_quantity'];
+            $minimumStock = (int)$_POST['minimum_stock'];
+            $unit = sanitize($_POST['unit']);
+
+            // Determine status
+            $status = 'available';
+            if ($stockQuantity == 0) {
+                $status = 'out_of_stock';
+            } elseif ($stockQuantity < $minimumStock) {
+                $status = 'low_stock';
+            }
+
+            $stmt = $conn->prepare("UPDATE inventory_items SET name = ?, description = ?, stock_quantity = ?, minimum_stock = ?, unit = ?, status = ? WHERE id = ?");
+            $stmt->bind_param("ssiiisi", $name, $description, $stockQuantity, $minimumStock, $unit, $status, $itemId);
+            $stmt->execute();
+
+            $success = 'Item inventory berjaya dikemaskini!';
+        }
+        
+        if (isset($_POST['add_item'])) {
+            $categoryId = (int)$_POST['category_id'];
+            $name = sanitize($_POST['name']);
+            $description = sanitize($_POST['description']);
+            $stockQuantity = (int)$_POST['stock_quantity'];
+            $minimumStock = (int)$_POST['minimum_stock'];
+            $unit = sanitize($_POST['unit']);
+
+            $status = 'available';
+            if ($stockQuantity == 0) {
+                $status = 'out_of_stock';
+            } elseif ($stockQuantity < $minimumStock) {
+                $status = 'low_stock';
+            }
+
+            $stmt = $conn->prepare("INSERT INTO inventory_items (category_id, name, description, stock_quantity, minimum_stock, unit, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("issiiis", $categoryId, $name, $description, $stockQuantity, $minimumStock, $unit, $status);
+            $stmt->execute();
+
+            $success = 'Item inventory berjaya ditambah!';
+        }
     }
 }
 
@@ -262,6 +267,7 @@ ob_start();
                     <td><?php echo htmlspecialchars($loan['notes'] ?? '-'); ?></td>
                     <td>
                         <form method="POST" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                             <input type="hidden" name="loan_id" value="<?php echo $loan['id']; ?>">
                             <input type="hidden" name="item_id" value="<?php echo $loan['item_id']; ?>">
                             <input type="hidden" name="quantity" value="<?php echo $loan['quantity']; ?>">
@@ -318,6 +324,7 @@ ob_start();
                     <td><?php echo $loan['return_date'] ? formatDate($loan['return_date']) : '-'; ?></td>
                     <td>
                         <form method="POST" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                             <input type="hidden" name="loan_id" value="<?php echo $loan['id']; ?>">
                             <input type="hidden" name="item_id" value="<?php echo $loan['item_id']; ?>">
                             <input type="hidden" name="quantity" value="<?php echo $loan['quantity']; ?>">
@@ -382,7 +389,7 @@ ob_start();
                     </td>
                     <td>
                         <button type="button" class="btn btn-info btn-sm" 
-                                onclick="openEditItemModal(<?php echo htmlspecialchars(json_encode($item)); ?>)">
+                                onclick='openEditItemModal(<?php echo safeJsonEncode($item); ?>)'>
                             <i class="fas fa-edit"></i> Edit
                         </button>
                     </td>
@@ -401,6 +408,7 @@ ob_start();
             <button class="modal-close" onclick="closeRejectModal()">&times;</button>
         </div>
         <form method="POST" action="">
+            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
             <input type="hidden" name="loan_id" id="reject_loan_id">
             <div class="form-group">
                 <label for="rejection_reason"><i class="fas fa-comment"></i> Sebab Penolakan</label>
@@ -421,6 +429,7 @@ ob_start();
             <button class="modal-close" onclick="closeAddItemModal()">&times;</button>
         </div>
         <form method="POST" action="">
+            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
             <div class="form-group">
                 <label for="add_category_id"><i class="fas fa-tag"></i> Kategori</label>
                 <select class="form-control" id="add_category_id" name="category_id" required>
@@ -467,6 +476,7 @@ ob_start();
             <button class="modal-close" onclick="closeEditItemModal()">&times;</button>
         </div>
         <form method="POST" action="">
+            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
             <input type="hidden" name="item_id" id="edit_item_id">
             <div class="form-group">
                 <label for="edit_name"><i class="fas fa-box"></i> Nama Item</label>

@@ -25,78 +25,98 @@ $success = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Debug: Log POST data
     error_log("POST received: " . print_r($_POST, true));
-    
-    $matrixNo = isset($_POST['matrix_no']) ? trim($_POST['matrix_no']) : '';
-    $email = isset($_POST['email']) ? trim($_POST['email']) : '';
-    $password = isset($_POST['password']) ? $_POST['password'] : '';
-    $role = isset($_POST['role']) ? trim($_POST['role']) : 'student';
-    
-    if (empty($password)) {
-        $error = 'Sila masukkan kata laluan';
-    } elseif (empty($matrixNo) && $role === 'student') {
-        $error = 'Sila masukkan nombor matrik';
-    } elseif (empty($email) && $role === 'doctor') {
-        $error = 'Sila masukkan emel';
+
+    // Verify CSRF Token
+    $csrfToken = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
+    if (!verifyCSRFToken($csrfToken)) {
+        $error = 'Ralat keselamatan: Token CSRF tidak sah. Sila cuba lagi.';
     } else {
-        try {
-            $conn = getDBConnection();
-            
-            if ($role === 'student') {
-                // Login with matrix number for students/staff
-                $stmt = $conn->prepare("SELECT * FROM users WHERE matrix_no = ? AND role IN ('student', 'staff') AND status = 'active'");
-                $stmt->bind_param("s", $matrixNo);
-            } else {
-                // Login with email for doctor
-                $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? AND role IN ('doctor', 'staff') AND status = 'active'");
-                $stmt->bind_param("s", $email);
-            }
-            
-            $stmt->execute();
-            $result = $stmt->get_result();
-            
-            error_log("Query result: " . $result->num_rows . " rows");
-            
-            if ($result->num_rows === 1) {
-                $user = $result->fetch_assoc();
+        $matrixNo = isset($_POST['matrix_no']) ? trim($_POST['matrix_no']) : '';
+        $email = isset($_POST['email']) ? trim($_POST['email']) : '';
+        $password = isset($_POST['password']) ? $_POST['password'] : '';
+        $role = isset($_POST['role']) ? trim($_POST['role']) : 'student';
+
+        if (empty($password)) {
+            $error = 'Sila masukkan kata laluan';
+        } elseif (empty($matrixNo) && $role === 'student') {
+            $error = 'Sila masukkan nombor matrik';
+        } elseif (empty($email) && $role === 'doctor') {
+            $error = 'Sila masukkan emel';
+        } else {
+            try {
+                $conn = getDBConnection();
                 
-                // Verify password - plain text comparison
-                if ($password === $user['password']) {
-                    // Set session variables
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['name'] = $user['name'];
-                    $_SESSION['email'] = $user['email'];
-                    $_SESSION['matrix_no'] = $user['matrix_no'];
-                    $_SESSION['role'] = $user['role'];
-                    $_SESSION['is_oku'] = $user['is_oku'] ?? 0;
-                    $_SESSION['department'] = $user['department'];
-                    $_SESSION['course'] = $user['course'];
-                    
-                    // Log activity
-                    try {
-                        logActivity($user['id'], 'User logged in', 'Login successful from ' . $_SERVER['REMOTE_ADDR']);
-                    } catch (Exception $e) {
-                        error_log("Log activity failed: " . $e->getMessage());
+                if ($role === 'student') {
+                    // Login with matrix number for students/staff
+                    $stmt = $conn->prepare("SELECT * FROM users WHERE matrix_no = ? AND role IN ('student', 'staff') AND status = 'active'");
+                    $stmt->bind_param("s", $matrixNo);
+                } else {
+                    // Login with email for doctor
+                    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? AND role IN ('doctor', 'staff') AND status = 'active'");
+                    $stmt->bind_param("s", $email);
+                }
+
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                error_log("Query result: " . $result->num_rows . " rows");
+
+                if ($result->num_rows === 1) {
+                    $user = $result->fetch_assoc();
+                    $loginSuccessful = false;
+
+                    // Verify password - support both hash and legacy plain text
+                    if (password_verify($password, $user['password'])) {
+                        $loginSuccessful = true;
+                    } elseif ($password === $user['password']) {
+                        // Legacy plain text match
+                        $loginSuccessful = true;
+                        // Automatic migration to hash
+                        $newHash = password_hash($password, PASSWORD_DEFAULT);
+                        $updateStmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+                        $updateStmt->bind_param("si", $newHash, $user['id']);
+                        $updateStmt->execute();
+                        error_log("Password migrated for user ID: " . $user['id']);
                     }
                     
-                    // Redirect based on role
-                    if ($user['role'] === 'doctor') {
-                        header("Location: " . BASE_URL . "/doctor/dashboard.php");
-                        exit();
+                    if ($loginSuccessful) {
+                        // Set session variables
+                        $_SESSION['user_id'] = $user['id'];
+                        $_SESSION['name'] = $user['name'];
+                        $_SESSION['email'] = $user['email'];
+                        $_SESSION['matrix_no'] = $user['matrix_no'];
+                        $_SESSION['role'] = $user['role'];
+                        $_SESSION['is_oku'] = $user['is_oku'] ?? 0;
+                        $_SESSION['department'] = $user['department'];
+                        $_SESSION['course'] = $user['course'];
+
+                        // Log activity
+                        try {
+                            logActivity($user['id'], 'User logged in', 'Login successful from ' . $_SERVER['REMOTE_ADDR']);
+                        } catch (Exception $e) {
+                            error_log("Log activity failed: " . $e->getMessage());
+                        }
+
+                        // Redirect based on role
+                        if ($user['role'] === 'doctor') {
+                            header("Location: " . BASE_URL . "/doctor/dashboard.php");
+                            exit();
+                        } else {
+                            header("Location: " . BASE_URL . "/student/dashboard.php");
+                            exit();
+                        }
                     } else {
-                        header("Location: " . BASE_URL . "/student/dashboard.php");
-                        exit();
+                        $error = 'Kata laluan tidak sah. Cuba: 123456';
                     }
                 } else {
-                    $error = 'Kata laluan tidak sah. Cuba: 123456';
+                    $error = 'Pengguna tidak dijumpai. Sila semak nombor matrik/emel.';
                 }
-            } else {
-                $error = 'Pengguna tidak dijumpai. Sila semak nombor matrik/emel.';
+
+                closeDBConnection($conn);
+            } catch (Exception $e) {
+                error_log("Login error: " . $e->getMessage());
+                $error = 'Ralat sistem: ' . $e->getMessage();
             }
-            
-            closeDBConnection($conn);
-        } catch (Exception $e) {
-            error_log("Login error: " . $e->getMessage());
-            $error = 'Ralat sistem: ' . $e->getMessage();
         }
     }
 }
@@ -184,6 +204,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" action="login.php" id="loginForm" onsubmit="return validateForm()">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
+
                 <div class="role-selector">
                     <div class="role-option active" onclick="selectRole('student')" id="role-student">
                         <i class="fas fa-user-graduate"></i>

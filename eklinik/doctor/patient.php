@@ -15,22 +15,27 @@ $conn = getDBConnection();
 
 // Handle update patient info
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_patient'])) {
-    $patientId = (int)$_POST['patient_id'];
-    $phone = sanitize($_POST['phone']);
-    $parentPhone = sanitize($_POST['parent_phone']);
-    $bloodType = sanitize($_POST['blood_type']);
-    $department = sanitize($_POST['department']);
-    $course = sanitize($_POST['course']);
-    $okuDisability = sanitize($_POST['oku_disability']);
-    
-    $stmt = $conn->prepare("UPDATE users SET phone = ?, parent_phone = ?, blood_type = ?, department = ?, course = ?, oku_disability = ? WHERE id = ?");
-    $stmt->bind_param("ssssssi", $phone, $parentPhone, $bloodType, $department, $course, $okuDisability, $patientId);
-    
-    if ($stmt->execute()) {
-        $success = 'Maklumat pesakit berjaya dikemaskini!';
-        logActivity($userId, 'Patient info updated', 'Updated info for patient ID ' . $patientId);
+    // CSRF Check
+    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+        $error = 'Ralat keselamatan: Token CSRF tidak sah.';
     } else {
-        $error = 'Ralat berlaku semasa mengemaskini maklumat';
+        $patientId = (int)$_POST['patient_id'];
+        $phone = sanitize($_POST['phone']);
+        $parentPhone = sanitize($_POST['parent_phone']);
+        $bloodType = sanitize($_POST['blood_type']);
+        $department = sanitize($_POST['department']);
+        $course = sanitize($_POST['course']);
+        $okuDisability = sanitize($_POST['oku_disability']);
+
+        $stmt = $conn->prepare("UPDATE users SET phone = ?, parent_phone = ?, blood_type = ?, department = ?, course = ?, oku_disability = ? WHERE id = ?");
+        $stmt->bind_param("ssssssi", $phone, $parentPhone, $bloodType, $department, $course, $okuDisability, $patientId);
+
+        if ($stmt->execute()) {
+            $success = 'Maklumat pesakit berjaya dikemaskini!';
+            logActivity($userId, 'Patient info updated', 'Updated info for patient ID ' . $patientId);
+        } else {
+            $error = 'Ralat berlaku semasa mengemaskini maklumat';
+        }
     }
 }
 
@@ -145,7 +150,7 @@ ob_start();
                     <td><?php echo $patient['total_visits'] ?? 0; ?></td>
                     <td>
                         <button type="button" class="btn btn-info btn-sm" 
-                                onclick="openPatientModal(<?php echo htmlspecialchars(json_encode($patient)); ?>)">
+                                onclick='openPatientModal(<?php echo safeJsonEncode($patient); ?>)'>
                             <i class="fas fa-eye"></i> Lihat
                         </button>
                     </td>
@@ -165,6 +170,7 @@ ob_start();
             <button class="modal-close" onclick="closePatientModal()">&times;</button>
         </div>
         <form method="POST" action="">
+            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
             <input type="hidden" name="patient_id" id="modal_patient_id">
             
             <div class="form-row">

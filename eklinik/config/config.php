@@ -76,9 +76,14 @@ function sanitize($data) {
     return $data;
 }
 
+// Safely encode data for JavaScript context
+function safeJsonEncode($data) {
+    return json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+}
+
 // Generate CSRF token
 function generateCSRFToken() {
-    if (!isset($_SESSION['csrf_token'])) {
+    if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
     return $_SESSION['csrf_token'];
