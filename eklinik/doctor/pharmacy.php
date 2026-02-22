@@ -15,100 +15,105 @@ $conn = getDBConnection();
 
 // Handle add new medicine
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['add_medicine'])) {
-        $name = sanitize($_POST['name']);
-        $description = sanitize($_POST['description']);
-        $stockQuantity = (int)$_POST['stock_quantity'];
-        $price = (float)$_POST['price'];
-        $expiryDate = sanitize($_POST['expiry_date']);
-        $category = sanitize($_POST['category']);
-        
-        // Determine status
-        $status = 'available';
-        $today = date('Y-m-d');
-        if ($stockQuantity == 0) {
-            $status = 'out_of_stock';
-        } elseif ($stockQuantity < 10) {
-            $status = 'low_stock';
-        }
-        if ($expiryDate < $today) {
-            $status = 'expired';
-        }
-        
-        $stmt = $conn->prepare("INSERT INTO medicines (name, description, stock_quantity, price, expiry_date, category, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssidsss", $name, $description, $stockQuantity, $price, $expiryDate, $category, $status);
-        
-        if ($stmt->execute()) {
-            $success = 'Ubat berjaya ditambah!';
-            logActivity($userId, 'Medicine added', 'Added new medicine: ' . $name);
-        } else {
-            $error = 'Ralat berlaku semasa menambah ubat';
-        }
-    }
-    
-    if (isset($_POST['update_medicine'])) {
-        $medicineId = (int)$_POST['medicine_id'];
-        $name = sanitize($_POST['name']);
-        $description = sanitize($_POST['description']);
-        $stockQuantity = (int)$_POST['stock_quantity'];
-        $price = (float)$_POST['price'];
-        $expiryDate = sanitize($_POST['expiry_date']);
-        $category = sanitize($_POST['category']);
-        
-        // Determine status
-        $status = 'available';
-        $today = date('Y-m-d');
-        if ($stockQuantity == 0) {
-            $status = 'out_of_stock';
-        } elseif ($stockQuantity < 10) {
-            $status = 'low_stock';
-        }
-        if ($expiryDate < $today) {
-            $status = 'expired';
+    // CSRF Check
+    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+        $error = 'Ralat keselamatan: Token CSRF tidak sah.';
+    } else {
+        if (isset($_POST['add_medicine'])) {
+            $name = sanitize($_POST['name']);
+            $description = sanitize($_POST['description']);
+            $stockQuantity = (int)$_POST['stock_quantity'];
+            $price = (float)$_POST['price'];
+            $expiryDate = sanitize($_POST['expiry_date']);
+            $category = sanitize($_POST['category']);
+
+            // Determine status
+            $status = 'available';
+            $today = date('Y-m-d');
+            if ($stockQuantity == 0) {
+                $status = 'out_of_stock';
+            } elseif ($stockQuantity < 10) {
+                $status = 'low_stock';
+            }
+            if ($expiryDate < $today) {
+                $status = 'expired';
+            }
+
+            $stmt = $conn->prepare("INSERT INTO medicines (name, description, stock_quantity, price, expiry_date, category, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssidsss", $name, $description, $stockQuantity, $price, $expiryDate, $category, $status);
+
+            if ($stmt->execute()) {
+                $success = 'Ubat berjaya ditambah!';
+                logActivity($userId, 'Medicine added', 'Added new medicine: ' . $name);
+            } else {
+                $error = 'Ralat berlaku semasa menambah ubat';
+            }
         }
         
-        $stmt = $conn->prepare("UPDATE medicines SET name = ?, description = ?, stock_quantity = ?, price = ?, expiry_date = ?, category = ?, status = ? WHERE id = ?");
-        $stmt->bind_param("ssidsssi", $name, $description, $stockQuantity, $price, $expiryDate, $category, $status, $medicineId);
-        
-        if ($stmt->execute()) {
-            $success = 'Ubat berjaya dikemaskini!';
-            logActivity($userId, 'Medicine updated', 'Updated medicine ID: ' . $medicineId);
-        } else {
-            $error = 'Ralat berlaku semasa mengemaskini ubat';
+        if (isset($_POST['update_medicine'])) {
+            $medicineId = (int)$_POST['medicine_id'];
+            $name = sanitize($_POST['name']);
+            $description = sanitize($_POST['description']);
+            $stockQuantity = (int)$_POST['stock_quantity'];
+            $price = (float)$_POST['price'];
+            $expiryDate = sanitize($_POST['expiry_date']);
+            $category = sanitize($_POST['category']);
+
+            // Determine status
+            $status = 'available';
+            $today = date('Y-m-d');
+            if ($stockQuantity == 0) {
+                $status = 'out_of_stock';
+            } elseif ($stockQuantity < 10) {
+                $status = 'low_stock';
+            }
+            if ($expiryDate < $today) {
+                $status = 'expired';
+            }
+
+            $stmt = $conn->prepare("UPDATE medicines SET name = ?, description = ?, stock_quantity = ?, price = ?, expiry_date = ?, category = ?, status = ? WHERE id = ?");
+            $stmt->bind_param("ssidsssi", $name, $description, $stockQuantity, $price, $expiryDate, $category, $status, $medicineId);
+
+            if ($stmt->execute()) {
+                $success = 'Ubat berjaya dikemaskini!';
+                logActivity($userId, 'Medicine updated', 'Updated medicine ID: ' . $medicineId);
+            } else {
+                $error = 'Ralat berlaku semasa mengemaskini ubat';
+            }
         }
-    }
-    
-    if (isset($_POST['dispense_medicine'])) {
-        $medicineId = (int)$_POST['medicine_id'];
-        $patientId = (int)$_POST['patient_id'];
-        $quantity = (int)$_POST['dispense_quantity'];
-        $dosage = sanitize($_POST['dosage']);
-        $instructions = sanitize($_POST['instructions']);
-        $appointmentId = isset($_POST['appointment_id']) ? (int)$_POST['appointment_id'] : null;
         
-        // Check stock
-        $stmt = $conn->prepare("SELECT stock_quantity FROM medicines WHERE id = ?");
-        $stmt->bind_param("i", $medicineId);
-        $stmt->execute();
-        $medicine = $stmt->get_result()->fetch_assoc();
-        
-        if ($medicine && $medicine['stock_quantity'] >= $quantity) {
-            // Deduct stock
-            $stmt = $conn->prepare("UPDATE medicines SET stock_quantity = stock_quantity - ? WHERE id = ?");
-            $stmt->bind_param("ii", $quantity, $medicineId);
+        if (isset($_POST['dispense_medicine'])) {
+            $medicineId = (int)$_POST['medicine_id'];
+            $patientId = (int)$_POST['patient_id'];
+            $quantity = (int)$_POST['dispense_quantity'];
+            $dosage = sanitize($_POST['dosage']);
+            $instructions = sanitize($_POST['instructions']);
+            $appointmentId = isset($_POST['appointment_id']) ? (int)$_POST['appointment_id'] : null;
+            
+            // Check stock
+            $stmt = $conn->prepare("SELECT stock_quantity FROM medicines WHERE id = ?");
+            $stmt->bind_param("i", $medicineId);
             $stmt->execute();
+            $medicine = $stmt->get_result()->fetch_assoc();
             
-            // Create dispensing record
-            $stmt = $conn->prepare("INSERT INTO medicine_dispensing (appointment_id, medicine_id, patient_id, quantity, dosage, instructions, dispensed_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("iiiissi", $appointmentId, $medicineId, $patientId, $quantity, $dosage, $instructions, $userId);
-            $stmt->execute();
-            
-            $success = 'Ubat berjaya diberikan kepada pesakit!';
-            
-            // Notify patient
-            createNotification($patientId, 'Ubat Diberikan', 'Anda telah menerima ubat dari farmasi. Sila ikut arahan pengambilan.', 'pharmacy');
-        } else {
-            $error = 'Stok ubat tidak mencukupi';
+            if ($medicine && $medicine['stock_quantity'] >= $quantity) {
+                // Deduct stock
+                $stmt = $conn->prepare("UPDATE medicines SET stock_quantity = stock_quantity - ? WHERE id = ?");
+                $stmt->bind_param("ii", $quantity, $medicineId);
+                $stmt->execute();
+
+                // Create dispensing record
+                $stmt = $conn->prepare("INSERT INTO medicine_dispensing (appointment_id, medicine_id, patient_id, quantity, dosage, instructions, dispensed_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("iiiissi", $appointmentId, $medicineId, $patientId, $quantity, $dosage, $instructions, $userId);
+                $stmt->execute();
+
+                $success = 'Ubat berjaya diberikan kepada pesakit!';
+
+                // Notify patient
+                createNotification($patientId, 'Ubat Diberikan', 'Anda telah menerima ubat dari farmasi. Sila ikut arahan pengambilan.', 'pharmacy');
+            } else {
+                $error = 'Stok ubat tidak mencukupi';
+            }
         }
     }
 }
@@ -163,6 +168,7 @@ ob_start();
         <h3 class="card-title"><i class="fas fa-plus-circle"></i> Tambah Ubat Baru</h3>
     </div>
     <form method="POST" action="">
+        <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
         <div class="form-row">
             <div class="form-group">
                 <label for="name"><i class="fas fa-pills"></i> Nama Ubat</label>
@@ -248,10 +254,10 @@ ob_start();
                         </span>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-info btn-sm" onclick="openEditMedicineModal(<?php echo htmlspecialchars(json_encode($med)); ?>)">
+                        <button type="button" class="btn btn-info btn-sm" onclick='openEditMedicineModal(<?php echo safeJsonEncode($med); ?>)'>
                             <i class="fas fa-edit"></i> Edit
                         </button>
-                        <button type="button" class="btn btn-success btn-sm" onclick="openDispenseModal(<?php echo $med['id']; ?>, '<?php echo htmlspecialchars($med['name']); ?>', <?php echo $med['stock_quantity']; ?>)">
+                        <button type="button" class="btn btn-success btn-sm" onclick='openDispenseModal(<?php echo $med['id']; ?>, <?php echo safeJsonEncode($med['name']); ?>, <?php echo $med['stock_quantity']; ?>)'>
                             <i class="fas fa-hand-holding-medical"></i> Beri
                         </button>
                     </td>
@@ -312,6 +318,7 @@ ob_start();
             <button class="modal-close" onclick="closeEditMedicineModal()">&times;</button>
         </div>
         <form method="POST" action="">
+            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
             <input type="hidden" name="medicine_id" id="edit_medicine_id">
             <div class="form-group">
                 <label for="edit_name"><i class="fas fa-pills"></i> Nama Ubat</label>
@@ -354,6 +361,7 @@ ob_start();
             <button class="modal-close" onclick="closeDispenseModal()">&times;</button>
         </div>
         <form method="POST" action="">
+            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
             <input type="hidden" name="medicine_id" id="dispense_medicine_id">
             <div style="margin-bottom: 20px; padding: 15px; background: rgba(0, 255, 0, 0.1); border-radius: 10px;">
                 <strong>Ubat:</strong> <span id="dispense_medicine_name"></span>
