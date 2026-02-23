@@ -101,7 +101,13 @@ ini_set('display_errors', 1);
         <?php
         // Check 2: MySQL Connection
         $mysqlOk = false;
-        $conn = @new mysqli('localhost', 'root', '');
+        if (file_exists('config/database.php')) {
+            require_once 'config/database.php';
+            $conn = @new mysqli(DB_HOST, DB_USER, DB_PASS);
+        } else {
+            $conn = @new mysqli('localhost', 'root', '');
+        }
+
         if ($conn && !$conn->connect_error) {
             $mysqlOk = true;
         }

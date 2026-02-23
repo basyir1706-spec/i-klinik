@@ -12,7 +12,14 @@ session_start();
 require_once __DIR__ . '/database.php';
 
 // Base URL
-define('BASE_URL', 'http://localhost/eklinik');
+// define('BASE_URL', 'http://localhost/eklinik');
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'];
+$app_root = str_replace('\\', '/', dirname(__DIR__));
+$doc_root = str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']);
+$relative_path = str_replace($doc_root, '', $app_root);
+
+define('BASE_URL', $protocol . '://' . $host . $relative_path);
 
 // Site Name
 define('SITE_NAME', 'i-Klinik Politeknik Besut');
@@ -71,8 +78,8 @@ function requireRole($roles) {
 // Sanitize input
 function sanitize($data) {
     $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data);
+    // $data = stripslashes($data); // Not needed unless magic_quotes is on (removed in PHP 5.4)
+    // $data = htmlspecialchars($data); // Should not escape for DB storage, only for output
     return $data;
 }
 

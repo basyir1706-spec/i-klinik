@@ -10,7 +10,9 @@ echo "<hr>";
 // Test 1: Database Connection
 echo "<h2>1. Database Connection Test</h2>";
 try {
-    $conn = new mysqli('localhost', 'root', '', 'eklinik');
+    require_once 'config/database.php';
+    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+
     if ($conn->connect_error) {
         echo "<p style='color: red;'>❌ Connection failed: " . $conn->connect_error . "</p>";
     } else {
@@ -22,7 +24,7 @@ try {
 
 // Test 2: Check Users Table
 echo "<h2>2. Users Table Test</h2>";
-if (isset($conn) && $conn) {
+if (isset($conn) && $conn && !$conn->connect_error) {
     $result = $conn->query("SELECT COUNT(*) as count FROM users");
     if ($result) {
         $row = $result->fetch_assoc();
@@ -37,8 +39,8 @@ if (isset($conn) && $conn) {
             echo "<tr>";
             echo "<td>{$user['id']}</td>";
             echo "<td>{$user['name']}</td>";
-            echo "<td>{$user['email'] ?? '-'}</td>";
-            echo "<td>{$user['matrix_no'] ?? '-'}</td>";
+            echo "<td>" . ($user['email'] ?? '-') . "</td>";
+            echo "<td>" . ($user['matrix_no'] ?? '-') . "</td>";
             echo "<td>{$user['role']}</td>";
             echo "<td>{$user['password']}</td>";
             echo "</tr>";
