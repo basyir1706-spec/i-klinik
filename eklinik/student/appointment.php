@@ -12,57 +12,73 @@ $isOKU = $_SESSION['is_oku'] ?? false;
 $success = '';
 $error = '';
 
-$conn = getDBConnection();
+$queueInfo = null;
+$appointments = [];
+$totalNotifications = 0;
+$pendingAppointments = 0;
 
-// Handle form submission for new appointment
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appointment'])) {
-    $appointmentDate = sanitize($_POST['appointment_date']);
-    $appointmentTime = sanitize($_POST['appointment_time']);
-    $symptoms = sanitize($_POST['symptoms']);
-    
-    if (empty($appointmentDate) || empty($appointmentTime)) {
-        $error = 'Sila pilih tarikh dan masa temujanji';
-    } else {
-        $queueNumber = getNextQueueNumber();
+try {
+    $conn = getDBConnection();
+
+    // Handle form submission for new appointment
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appointment'])) {
+        $appointmentDate = sanitize($_POST['appointment_date']);
+        $appointmentTime = sanitize($_POST['appointment_time']);
+        $symptoms = sanitize($_POST['symptoms']);
         
-        $stmt = $conn->prepare("INSERT INTO appointments (user_id, appointment_date, appointment_time, queue_number, symptoms, status) VALUES (?, ?, ?, ?, ?, 'pending')");
-        $stmt->bind_param("issis", $userId, $appointmentDate, $appointmentTime, $queueNumber, $symptoms);
-        
-        if ($stmt->execute()) {
-            $success = 'Temujanji berjaya dibuat!';
-            logActivity($userId, 'Appointment created', 'New appointment created for ' . $appointmentDate);
-            
-            // Create notification
-            createNotification($userId, 'Temujanji Dicipta', 'Temujanji anda untuk ' . $appointmentDate . ' telah berjaya dicipta.', 'appointment');
+        if (empty($appointmentDate) || empty($appointmentTime)) {
+            $error = 'Sila pilih tarikh dan masa temujanji';
         } else {
-            $error = 'Ralat berlaku semasa mencipta temujanji';
+            $queueNumber = getNextQueueNumber();
+            
+            $stmt = $conn->prepare("INSERT INTO appointments (user_id, appointment_date, appointment_time, queue_number, symptoms, status) VALUES (?, ?, ?, ?, ?, 'pending')");
+            $stmt->bind_param("issis", $userId, $appointmentDate, $appointmentTime, $queueNumber, $symptoms);
+
+            if ($stmt->execute()) {
+                $success = 'Temujanji berjaya dibuat!';
+                logActivity($userId, 'Appointment created', 'New appointment created for ' . $appointmentDate);
+
+                // Create notification
+                createNotification($userId, 'Temujanji Dicipta', 'Temujanji anda untuk ' . $appointmentDate . ' telah berjaya dicipta.', 'appointment');
+            } else {
+                $error = 'Ralat berlaku semasa mencipta temujanji';
+            }
+        }
+    } elseif (isset($_GET['cancel']) && is_numeric($_GET['cancel'])) {
+        // Handle cancellation
+        $aptId = (int)$_GET['cancel'];
+        // Only allow cancelling pending or confirmed appointments
+        $stmt = $conn->prepare("UPDATE appointments SET status = 'cancelled' WHERE id = ? AND user_id = ? AND status IN ('pending', 'confirmed')");
+        $stmt->bind_param("ii", $aptId, $userId);
+        $stmt->execute();
+
+        if ($stmt->affected_rows > 0) {
+            $success = 'Temujanji dibatalkan';
+        } else {
+            // Optional: Set error if cancellation failed (e.g. already cancelled)
+            // $error = 'Gagal membatalkan temujanji.';
         }
     }
-}
 
-// Handle cancellation
-if (isset($_GET['cancel']) && is_numeric($_GET['cancel'])) {
-    $aptId = (int)$_GET['cancel'];
-    $stmt = $conn->prepare("UPDATE appointments SET status = 'cancelled' WHERE id = ? AND user_id = ?");
-    $stmt->bind_param("ii", $aptId, $userId);
+    // Get current queue info
+    $queueInfo = getCurrentQueueNumber($userId);
+
+    // Get all appointments for this user
+    $stmt = $conn->prepare("SELECT a.*, u.name as doctor_name FROM appointments a LEFT JOIN users u ON a.doctor_id = u.id WHERE a.user_id = ? ORDER BY a.appointment_date DESC, a.appointment_time DESC");
+    $stmt->bind_param("i", $userId);
     $stmt->execute();
-    $success = 'Temujanji dibatalkan';
-}
+    $appointments = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Get current queue info
-$queueInfo = getCurrentQueueNumber($userId);
+    // Get unread notifications
+    $totalNotifications = getUnreadNotificationCount($userId);
 
-// Get all appointments for this user
-$stmt = $conn->prepare("SELECT a.*, u.name as doctor_name FROM appointments a LEFT JOIN users u ON a.doctor_id = u.id WHERE a.user_id = ? ORDER BY a.appointment_date DESC, a.appointment_time DESC");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$appointments = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    foreach ($appointments as $apt) {
+        if ($apt['status'] === 'pending') $pendingAppointments++;
+    }
 
-// Get unread notifications
-$totalNotifications = getUnreadNotificationCount($userId);
-$pendingAppointments = 0;
-foreach ($appointments as $apt) {
-    if ($apt['status'] === 'pending') $pendingAppointments++;
+    closeDBConnection($conn);
+} catch (Exception $e) {
+    $error = "System Error: " . $e->getMessage();
 }
 
 // Notification badges
