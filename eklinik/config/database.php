@@ -11,22 +11,24 @@ define('DB_NAME', 'eklinik');
 
 // Create connection with error handling
 function getDBConnection() {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
-    
-    if ($conn->connect_error) {
-        error_log("MySQL connection failed: " . $conn->connect_error);
-        return null;
+    try {
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
+
+        if ($conn->connect_error) {
+            throw new Exception("MySQL connection failed: " . $conn->connect_error);
+        }
+
+        // Select database
+        if (!$conn->select_db(DB_NAME)) {
+            throw new Exception("Database '" . DB_NAME . "' not found. Please import the SQL file first.");
+        }
+
+        $conn->set_charset("utf8mb4");
+        return $conn;
+    } catch (Throwable $e) {
+        error_log("Database Connection Error: " . $e->getMessage());
+        throw new Exception($e->getMessage());
     }
-    
-    // Select database
-    $conn->select_db(DB_NAME);
-    if ($conn->error) {
-        error_log("Database '" . DB_NAME . "' not found. Please import the SQL file first.");
-        return null;
-    }
-    
-    $conn->set_charset("utf8mb4");
-    return $conn;
 }
 
 // Close connection

@@ -5,6 +5,8 @@
  */
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
+require_once 'config/database.php';
 ?>
 <!DOCTYPE html>
 <html lang="ms">
@@ -101,9 +103,13 @@ ini_set('display_errors', 1);
         <?php
         // Check 2: MySQL Connection
         $mysqlOk = false;
-        $conn = @new mysqli('localhost', 'root', '');
-        if ($conn && !$conn->connect_error) {
-            $mysqlOk = true;
+        try {
+            $conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
+            if ($conn && !$conn->connect_error) {
+                $mysqlOk = true;
+            }
+        } catch (Exception $e) {
+            $mysqlOk = false;
         }
         ?>
         <div class="check-item <?php echo $mysqlOk ? 'success' : 'error'; ?>">
@@ -126,7 +132,7 @@ ini_set('display_errors', 1);
         // Check 3: Database Exists
         $dbExists = false;
         if ($mysqlOk && $conn) {
-            $result = $conn->query("SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'eklinik'");
+            $result = $conn->query("SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '" . DB_NAME . "'");
             if ($result && $result->num_rows > 0) {
                 $dbExists = true;
             }
@@ -135,12 +141,12 @@ ini_set('display_errors', 1);
         <div class="check-item <?php echo $dbExists ? 'success' : 'error'; ?>">
             <div class="icon"><?php echo $dbExists ? '✅' : '❌'; ?></div>
             <div class="content">
-                <div class="title">Database 'eklinik'</div>
+                <div class="title">Database '<?php echo DB_NAME; ?>'</div>
                 <div class="message">
                     <?php if ($dbExists): ?>
                         Database exists
                     <?php else: ?>
-                        Database 'eklinik' does not exist!
+                        Database '<?php echo DB_NAME; ?>' does not exist!
                         <br><strong style="color: #ff4444;">Please import database/eklinik.sql!</strong>
                     <?php endif; ?>
                 </div>
@@ -153,7 +159,7 @@ ini_set('display_errors', 1);
         $usersTableOk = false;
         $userCount = 0;
         if ($dbExists && $conn) {
-            $conn->select_db('eklinik');
+            $conn->select_db(DB_NAME);
             $result = $conn->query("SELECT COUNT(*) as count FROM users");
             if ($result) {
                 $usersTableOk = true;
@@ -276,7 +282,7 @@ ini_set('display_errors', 1);
                     <strong>Step 3: Reset Passwords (if needed)</strong><br>
                     <div class="code">
                         1. Open: http://localhost/phpmyadmin<br>
-                        2. Select database 'eklinik'<br>
+                        2. Select database '<?php echo DB_NAME; ?>'<br>
                         3. Click "SQL" tab<br>
                         4. Copy & paste content from: database/reset_passwords.sql<br>
                         5. Click "Go"
