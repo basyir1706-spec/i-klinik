@@ -10,7 +10,7 @@ echo "<hr>";
 // Test 1: Database Connection
 echo "<h2>1. Database Connection Test</h2>";
 try {
-    $conn = new mysqli('localhost', 'root', '', 'eklinik');
+    $conn = new mysqli('127.0.0.1', 'root', '', 'eklinik');
     if ($conn->connect_error) {
         echo "<p style='color: red;'>❌ Connection failed: " . $conn->connect_error . "</p>";
     } else {
@@ -35,12 +35,12 @@ if (isset($conn) && $conn) {
         echo "<tr><th>ID</th><th>Name</th><th>Email</th><th>Matrix No</th><th>Role</th><th>Password</th></tr>";
         while ($user = $result->fetch_assoc()) {
             echo "<tr>";
-            echo "<td>{$user['id']}</td>";
-            echo "<td>{$user['name']}</td>";
-            echo "<td>{$user['email'] ?? '-'}</td>";
-            echo "<td>{$user['matrix_no'] ?? '-'}</td>";
-            echo "<td>{$user['role']}</td>";
-            echo "<td>{$user['password']}</td>";
+            echo "<td>" . $user['id'] . "</td>";
+            echo "<td>" . $user['name'] . "</td>";
+            echo "<td>" . ($user['email'] ?? '-') . "</td>";
+            echo "<td>" . ($user['matrix_no'] ?? '-') . "</td>";
+            echo "<td>" . $user['role'] . "</td>";
+            echo "<td>" . $user['password'] . "</td>";
             echo "</tr>";
         }
         echo "</table>";

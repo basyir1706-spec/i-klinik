@@ -16,37 +16,51 @@ $conn = getDBConnection();
 
 // Handle form submission for new appointment
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appointment'])) {
-    $appointmentDate = sanitize($_POST['appointment_date']);
-    $appointmentTime = sanitize($_POST['appointment_time']);
-    $symptoms = sanitize($_POST['symptoms']);
-    
-    if (empty($appointmentDate) || empty($appointmentTime)) {
-        $error = 'Sila pilih tarikh dan masa temujanji';
+    // CSRF Protection
+    if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
+        $error = 'Ralat keselamatan: Sesi tidak sah. Sila cuba lagi.';
     } else {
-        $queueNumber = getNextQueueNumber();
+        $appointmentDate = sanitize($_POST['appointment_date']);
+        $appointmentTime = sanitize($_POST['appointment_time']);
+        $symptoms = sanitize($_POST['symptoms']);
         
-        $stmt = $conn->prepare("INSERT INTO appointments (user_id, appointment_date, appointment_time, queue_number, symptoms, status) VALUES (?, ?, ?, ?, ?, 'pending')");
-        $stmt->bind_param("issis", $userId, $appointmentDate, $appointmentTime, $queueNumber, $symptoms);
-        
-        if ($stmt->execute()) {
-            $success = 'Temujanji berjaya dibuat!';
-            logActivity($userId, 'Appointment created', 'New appointment created for ' . $appointmentDate);
-            
-            // Create notification
-            createNotification($userId, 'Temujanji Dicipta', 'Temujanji anda untuk ' . $appointmentDate . ' telah berjaya dicipta.', 'appointment');
+        if (empty($appointmentDate) || empty($appointmentTime)) {
+            $error = 'Sila pilih tarikh dan masa temujanji';
         } else {
-            $error = 'Ralat berlaku semasa mencipta temujanji';
+            $queueNumber = getNextQueueNumber();
+
+            $stmt = $conn->prepare("INSERT INTO appointments (user_id, appointment_date, appointment_time, queue_number, symptoms, status) VALUES (?, ?, ?, ?, ?, 'pending')");
+            $stmt->bind_param("issis", $userId, $appointmentDate, $appointmentTime, $queueNumber, $symptoms);
+
+            if ($stmt->execute()) {
+                $success = 'Temujanji berjaya dibuat!';
+                logActivity($userId, 'Appointment created', 'New appointment created for ' . $appointmentDate);
+
+                // Create notification
+                createNotification($userId, 'Temujanji Dicipta', 'Temujanji anda untuk ' . $appointmentDate . ' telah berjaya dicipta.', 'appointment');
+            } else {
+                $error = 'Ralat berlaku semasa mencipta temujanji';
+            }
         }
     }
 }
 
 // Handle cancellation
-if (isset($_GET['cancel']) && is_numeric($_GET['cancel'])) {
-    $aptId = (int)$_GET['cancel'];
-    $stmt = $conn->prepare("UPDATE appointments SET status = 'cancelled' WHERE id = ? AND user_id = ?");
-    $stmt->bind_param("ii", $aptId, $userId);
-    $stmt->execute();
-    $success = 'Temujanji dibatalkan';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_appointment'])) {
+    // CSRF Protection
+    if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
+        $error = 'Ralat keselamatan: Sesi tidak sah. Sila cuba lagi.';
+    } else {
+        $aptId = (int)$_POST['cancel_id'];
+        $stmt = $conn->prepare("UPDATE appointments SET status = 'cancelled' WHERE id = ? AND user_id = ?");
+        $stmt->bind_param("ii", $aptId, $userId);
+        if ($stmt->execute()) {
+            $success = 'Temujanji dibatalkan';
+            logActivity($userId, 'Appointment cancelled', 'Appointment ID ' . $aptId . ' cancelled');
+        } else {
+            $error = 'Ralat semasa membatalkan temujanji.';
+        }
+    }
 }
 
 // Get current queue info
@@ -109,6 +123,7 @@ ob_start();
         <h3 class="card-title"><i class="fas fa-calendar-plus"></i> Buat Temujanji Baru</h3>
     </div>
     <form method="POST" action="">
+        <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
         <div class="form-row">
             <div class="form-group">
                 <label for="appointment_date"><i class="fas fa-calendar"></i> Tarikh Temujanji</label>
@@ -192,10 +207,13 @@ ob_start();
                     </td>
                     <td>
                         <?php if ($apt['status'] === 'pending' || $apt['status'] === 'confirmed'): ?>
-                        <a href="?cancel=<?php echo $apt['id']; ?>" class="btn btn-danger btn-sm" 
-                           onclick="return confirm('Adakah anda pasti ingin membatalkan temujanji ini?')">
-                            <i class="fas fa-times"></i> Batal
-                        </a>
+                        <form method="POST" action="" style="display:inline;" onsubmit="return confirm('Adakah anda pasti ingin membatalkan temujanji ini?');">
+                            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
+                            <input type="hidden" name="cancel_id" value="<?php echo $apt['id']; ?>">
+                            <button type="submit" name="cancel_appointment" class="btn btn-danger btn-sm">
+                                <i class="fas fa-times"></i> Batal
+                            </button>
+                        </form>
                         <?php else: ?>
                         <span style="color: var(--gray-600);">-</span>
                         <?php endif; ?>

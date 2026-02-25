@@ -4,7 +4,7 @@
  * i-Klinik Politeknik Besut
  */
 
-define('DB_HOST', 'localhost');
+define('DB_HOST', '127.0.0.1');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_NAME', 'eklinik');
@@ -15,14 +15,15 @@ function getDBConnection() {
     
     if ($conn->connect_error) {
         error_log("MySQL connection failed: " . $conn->connect_error);
-        return null;
+        // Show a user-friendly error message and stop execution
+        die("<h1>Connection Error</h1><p>Sorry, we are experiencing technical difficulties. Please try again later.</p><!-- Debug: " . $conn->connect_error . " -->");
     }
     
     // Select database
     $conn->select_db(DB_NAME);
     if ($conn->error) {
         error_log("Database '" . DB_NAME . "' not found. Please import the SQL file first.");
-        return null;
+        die("<h1>Configuration Error</h1><p>Database not found. Please contact the administrator.</p><!-- Debug: Database '" . DB_NAME . "' not found -->");
     }
     
     $conn->set_charset("utf8mb4");

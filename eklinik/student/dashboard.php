@@ -58,7 +58,7 @@ ob_start();
             echo $queueInfo['status'] === 'completed' ? 'success' : 
                 ($queueInfo['status'] === 'in_progress' ? 'info' : 'warning'); 
         ?>">
-            <?php echo ucfirst($queueInfo['status']); ?>
+            <?php echo htmlspecialchars(ucfirst($queueInfo['status'])); ?>
         </span>
     </div>
 </div>
@@ -164,7 +164,7 @@ ob_start();
                                 ($apt['status'] === 'in_progress' ? 'info' : 
                                 ($apt['status'] === 'cancelled' ? 'danger' : 'warning')); 
                         ?>">
-                            <?php echo ucfirst($apt['status']); ?>
+                            <?php echo htmlspecialchars(ucfirst($apt['status'])); ?>
                         </span>
                     </td>
                 </tr>
