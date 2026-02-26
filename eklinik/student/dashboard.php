@@ -10,33 +10,43 @@ $userName = getCurrentUserName();
 $userRole = getCurrentUserRole();
 $isOKU = $_SESSION['is_oku'] ?? false;
 
-$conn = getDBConnection();
+try {
+    $conn = getDBConnection();
 
-// Get current queue info
+    // Get pending appointments
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM appointments WHERE user_id = ? AND status = 'pending'");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $pendingAppointments = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
+
+    // Get active stock loans
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM stock_loans WHERE user_id = ? AND status IN ('pending', 'approved')");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $activeLoans = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
+
+    // Get today's appointments list
+    $stmt = $conn->prepare("SELECT a.*, u.name FROM appointments a JOIN users u ON a.user_id = u.id WHERE a.appointment_date = CURDATE() ORDER BY a.queue_number ASC");
+    $stmt->execute();
+    $todayAppointments = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+    closeDBConnection($conn);
+
+} catch (Throwable $e) {
+    error_log("Student Dashboard Error: " . $e->getMessage());
+    $dbError = "Sistem mengalami masalah sambungan database.";
+
+    // Defaults
+    $pendingAppointments = 0;
+    $activeLoans = 0;
+    $todayAppointments = [];
+    if (isset($conn)) closeDBConnection($conn);
+}
+
+// Get safe values (these handle their own errors)
 $queueInfo = getCurrentQueueNumber($userId);
 $todayQueueCount = getTodayQueueCount();
-
-// Get unread notifications
 $totalNotifications = getUnreadNotificationCount($userId);
-
-// Get pending appointments
-$stmt = $conn->prepare("SELECT COUNT(*) as count FROM appointments WHERE user_id = ? AND status = 'pending'");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$pendingAppointments = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
-
-// Get active stock loans
-$stmt = $conn->prepare("SELECT COUNT(*) as count FROM stock_loans WHERE user_id = ? AND status IN ('pending', 'approved')");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$activeLoans = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
-
-// Get today's appointments list
-$stmt = $conn->prepare("SELECT a.*, u.name FROM appointments a JOIN users u ON a.user_id = u.id WHERE a.appointment_date = CURDATE() ORDER BY a.queue_number ASC");
-$stmt->execute();
-$todayAppointments = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-
-closeDBConnection($conn);
 
 // Notification badges
 $appointmentNotification = $pendingAppointments;
@@ -46,6 +56,13 @@ $activePage = 'dashboard';
 // Start output buffering for content
 ob_start();
 ?>
+
+<!-- Error Alert -->
+<?php if (isset($dbError)): ?>
+    <div class="alert alert-danger" style="margin-bottom: 20px; background: #ffebee; border: 1px solid #ffcdd2; color: #b71c1c; padding: 15px; border-radius: 4px;">
+        <i class="fas fa-exclamation-triangle"></i> <?php echo htmlspecialchars($dbError); ?>
+    </div>
+<?php endif; ?>
 
 <!-- Queue Number Banner -->
 <?php if ($queueInfo): ?>

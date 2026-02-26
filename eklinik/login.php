@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             closeDBConnection($conn);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             error_log("Login error: " . $e->getMessage());
             $error = 'Ralat sistem: ' . $e->getMessage();
         }
