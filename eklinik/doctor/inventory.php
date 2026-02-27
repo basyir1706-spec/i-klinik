@@ -20,24 +20,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $itemId = (int)$_POST['item_id'];
         $quantity = (int)$_POST['quantity'];
         
-        // Update loan status
-        $stmt = $conn->prepare("UPDATE stock_loans SET status = 'approved', approved_by = ? WHERE id = ?");
-        $stmt->bind_param("ii", $userId, $loanId);
+        // Check current stock first
+        $stmt = $conn->prepare("SELECT stock_quantity FROM inventory_items WHERE id = ?");
+        $stmt->bind_param("i", $itemId);
         $stmt->execute();
-        
-        // Deduct from inventory
-        $stmt = $conn->prepare("UPDATE inventory_items SET stock_quantity = stock_quantity - ? WHERE id = ?");
-        $stmt->bind_param("ii", $quantity, $itemId);
-        $stmt->execute();
-        
-        $success = 'Permohonan pinjaman diluluskan!';
-        
-        // Get loan info for notification
-        $stmt = $conn->prepare("SELECT user_id FROM stock_loans WHERE id = ?");
-        $stmt->bind_param("i", $loanId);
-        $stmt->execute();
-        $loanUser = $stmt->get_result()->fetch_assoc();
-        createNotification($loanUser['user_id'], 'Pinjaman Stok Diluluskan', 'Permohonan pinjaman stok first aid anda telah diluluskan. Sila ambil di klinik.', 'inventory');
+        $item = $stmt->get_result()->fetch_assoc();
+
+        if ($item && $item['stock_quantity'] >= $quantity) {
+            // Update loan status
+            $stmt = $conn->prepare("UPDATE stock_loans SET status = 'approved', approved_by = ? WHERE id = ?");
+            $stmt->bind_param("ii", $userId, $loanId);
+            $stmt->execute();
+
+            // Deduct from inventory
+            $stmt = $conn->prepare("UPDATE inventory_items SET stock_quantity = stock_quantity - ? WHERE id = ?");
+            $stmt->bind_param("ii", $quantity, $itemId);
+            $stmt->execute();
+
+            $success = 'Permohonan pinjaman diluluskan!';
+
+            // Get loan info for notification
+            $stmt = $conn->prepare("SELECT user_id FROM stock_loans WHERE id = ?");
+            $stmt->bind_param("i", $loanId);
+            $stmt->execute();
+            $loanUser = $stmt->get_result()->fetch_assoc();
+            createNotification($loanUser['user_id'], 'Pinjaman Stok Diluluskan', 'Permohonan pinjaman stok first aid anda telah diluluskan. Sila ambil di klinik.', 'inventory');
+        } else {
+            $error = 'Stok tidak mencukupi untuk meluluskan pinjaman ini.';
+        }
     }
     
     if (isset($_POST['reject_loan'])) {
