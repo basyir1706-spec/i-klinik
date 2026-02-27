@@ -4,9 +4,21 @@
  * i-Klinik Politeknik Besut
  */
 
-// Error Reporting for Development
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// Start output buffering to prevent header issues
+ob_start();
+
+// Debug Mode Configuration
+define('DEBUG_MODE', true);
+
+if (DEBUG_MODE) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+} else {
+    error_reporting(0);
+    ini_set('display_errors', 0);
+    ini_set('log_errors', 1);
+    ini_set('error_log', __DIR__ . '/../error.log');
+}
 
 session_start();
 require_once __DIR__ . '/database.php';
@@ -63,7 +75,8 @@ function requireRole($roles) {
     if (!is_array($roles)) {
         $roles = [$roles];
     }
-    if (!in_array($_SESSION['role'], $roles)) {
+    // Ensure role is set to avoid undefined index notice
+    if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $roles)) {
         redirect(BASE_URL . '/unauthorized.php');
     }
 }
@@ -79,7 +92,11 @@ function sanitize($data) {
 // Generate CSRF token
 function generateCSRFToken() {
     if (!isset($_SESSION['csrf_token'])) {
-        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        try {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        } catch (Exception $e) {
+            $_SESSION['csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
+        }
     }
     return $_SESSION['csrf_token'];
 }
@@ -91,97 +108,134 @@ function verifyCSRFToken($token) {
 
 // Get unread notification count
 function getUnreadNotificationCount($userId) {
-    $conn = getDBConnection();
-    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    closeDBConnection($conn);
-    return $row['count'] ?? 0;
+    try {
+        $conn = getDBConnection();
+        $stmt = $conn->prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        closeDBConnection($conn);
+        return $row['count'] ?? 0;
+    } catch (Exception $e) {
+        if (DEBUG_MODE) error_log("Error in getUnreadNotificationCount: " . $e->getMessage());
+        return 0;
+    }
 }
 
 // Get current queue number for today's appointments
 function getCurrentQueueNumber($userId) {
-    $conn = getDBConnection();
-    $today = date('Y-m-d');
-    $stmt = $conn->prepare("SELECT queue_number, status FROM appointments WHERE user_id = ? AND appointment_date = ? ORDER BY queue_number ASC");
-    $stmt->bind_param("is", $userId, $today);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($row = $result->fetch_assoc()) {
+    try {
+        $conn = getDBConnection();
+        $today = date('Y-m-d');
+        $stmt = $conn->prepare("SELECT queue_number, status FROM appointments WHERE user_id = ? AND appointment_date = ? ORDER BY queue_number ASC");
+        $stmt->bind_param("is", $userId, $today);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            closeDBConnection($conn);
+            return $row;
+        }
         closeDBConnection($conn);
-        return $row;
+        return null;
+    } catch (Exception $e) {
+        if (DEBUG_MODE) error_log("Error in getCurrentQueueNumber: " . $e->getMessage());
+        return null;
     }
-    closeDBConnection($conn);
-    return null;
 }
 
 // Get today's queue count
 function getTodayQueueCount() {
-    $conn = getDBConnection();
-    $today = date('Y-m-d');
-    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM appointments WHERE appointment_date = ? AND status != 'cancelled'");
-    $stmt->bind_param("s", $today);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    closeDBConnection($conn);
-    return $row['count'] ?? 0;
+    try {
+        $conn = getDBConnection();
+        $today = date('Y-m-d');
+        $stmt = $conn->prepare("SELECT COUNT(*) as count FROM appointments WHERE appointment_date = ? AND status != 'cancelled'");
+        $stmt->bind_param("s", $today);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        closeDBConnection($conn);
+        return $row['count'] ?? 0;
+    } catch (Exception $e) {
+        if (DEBUG_MODE) error_log("Error in getTodayQueueCount: " . $e->getMessage());
+        return 0;
+    }
 }
 
 // Format date
 function formatDate($date, $format = 'd/m/Y') {
+    if (!$date) return '-';
     return date($format, strtotime($date));
 }
 
 // Format time
 function formatTime($time, $format = 'h:i A') {
+    if (!$time) return '-';
     return date($format, strtotime($time));
 }
 
 // Get user info by ID
 function getUserInfo($userId) {
-    $conn = getDBConnection();
-    $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
-    closeDBConnection($conn);
-    return $user;
+    try {
+        $conn = getDBConnection();
+        $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+        closeDBConnection($conn);
+        return $user;
+    } catch (Exception $e) {
+        if (DEBUG_MODE) error_log("Error in getUserInfo: " . $e->getMessage());
+        return null;
+    }
 }
 
 // Create notification
 function createNotification($userId, $title, $message, $type = 'general') {
-    $conn = getDBConnection();
-    $stmt = $conn->prepare("INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("isss", $userId, $title, $message, $type);
-    $stmt->execute();
-    $insertId = $conn->insert_id;
-    closeDBConnection($conn);
-    return $insertId;
+    try {
+        $conn = getDBConnection();
+        $stmt = $conn->prepare("INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isss", $userId, $title, $message, $type);
+        $stmt->execute();
+        $insertId = $conn->insert_id;
+        closeDBConnection($conn);
+        return $insertId;
+    } catch (Exception $e) {
+        if (DEBUG_MODE) error_log("Error in createNotification: " . $e->getMessage());
+        return false;
+    }
 }
 
 // Log activity
 function logActivity($userId, $activity, $description = '') {
-    $conn = getDBConnection();
-    $stmt = $conn->prepare("INSERT INTO activity_logs (user_id, activity, description) VALUES (?, ?, ?)");
-    $stmt->bind_param("iss", $userId, $activity, $description);
-    $stmt->execute();
-    closeDBConnection($conn);
+    try {
+        $conn = getDBConnection();
+        $stmt = $conn->prepare("INSERT INTO activity_logs (user_id, activity, description) VALUES (?, ?, ?)");
+        $stmt->bind_param("iss", $userId, $activity, $description);
+        $stmt->execute();
+        closeDBConnection($conn);
+    } catch (Exception $e) {
+        // Silently fail for logs to avoid disrupting user flow
+        if (DEBUG_MODE) error_log("Error in logActivity: " . $e->getMessage());
+    }
 }
 
 // Get next queue number for today
 function getNextQueueNumber() {
-    $conn = getDBConnection();
-    $today = date('Y-m-d');
-    $stmt = $conn->prepare("SELECT COALESCE(MAX(queue_number), 0) + 1 as next_queue FROM appointments WHERE appointment_date = ?");
-    $stmt->bind_param("s", $today);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    closeDBConnection($conn);
-    return $row['next_queue'] ?? 1;
+    try {
+        $conn = getDBConnection();
+        $today = date('Y-m-d');
+        $stmt = $conn->prepare("SELECT COALESCE(MAX(queue_number), 0) + 1 as next_queue FROM appointments WHERE appointment_date = ?");
+        $stmt->bind_param("s", $today);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        closeDBConnection($conn);
+        return $row['next_queue'] ?? 1;
+    } catch (Exception $e) {
+        if (DEBUG_MODE) error_log("Error in getNextQueueNumber: " . $e->getMessage());
+        return 1;
+    }
 }
 ?>
