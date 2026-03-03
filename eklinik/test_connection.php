@@ -35,12 +35,12 @@ if (isset($conn) && $conn) {
         echo "<tr><th>ID</th><th>Name</th><th>Email</th><th>Matrix No</th><th>Role</th><th>Password</th></tr>";
         while ($user = $result->fetch_assoc()) {
             echo "<tr>";
-            echo "<td>{$user['id']}</td>";
-            echo "<td>{$user['name']}</td>";
-            echo "<td>{$user['email'] ?? '-'}</td>";
-            echo "<td>{$user['matrix_no'] ?? '-'}</td>";
-            echo "<td>{$user['role']}</td>";
-            echo "<td>{$user['password']}</td>";
+            echo "<td>" . htmlspecialchars($user['id']) . "</td>";
+            echo "<td>" . htmlspecialchars($user['name']) . "</td>";
+            echo "<td>" . (!empty($user['email']) ? htmlspecialchars($user['email']) : '-') . "</td>";
+            echo "<td>" . (!empty($user['matrix_no']) ? htmlspecialchars($user['matrix_no']) : '-') . "</td>";
+            echo "<td>" . htmlspecialchars($user['role']) . "</td>";
+            echo "<td>" . htmlspecialchars($user['password']) . "</td>";
             echo "</tr>";
         }
         echo "</table>";
