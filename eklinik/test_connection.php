@@ -34,11 +34,13 @@ if (isset($conn) && $conn) {
         echo "<table border='1' cellpadding='10' style='border-collapse: collapse;'>";
         echo "<tr><th>ID</th><th>Name</th><th>Email</th><th>Matrix No</th><th>Role</th><th>Password</th></tr>";
         while ($user = $result->fetch_assoc()) {
+            $email = isset($user['email']) ? $user['email'] : '-';
+            $matrix_no = isset($user['matrix_no']) ? $user['matrix_no'] : '-';
             echo "<tr>";
             echo "<td>{$user['id']}</td>";
             echo "<td>{$user['name']}</td>";
-            echo "<td>{$user['email'] ?? '-'}</td>";
-            echo "<td>{$user['matrix_no'] ?? '-'}</td>";
+            echo "<td>{$email}</td>";
+            echo "<td>{$matrix_no}</td>";
             echo "<td>{$user['role']}</td>";
             echo "<td>{$user['password']}</td>";
             echo "</tr>";

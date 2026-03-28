@@ -179,7 +179,11 @@ ob_start();
                     <td><?php echo formatDate($apt['appointment_date']); ?></td>
                     <td><?php echo formatTime($apt['appointment_time'], 'h:i A'); ?></td>
                     <td>#<?php echo $apt['queue_number']; ?></td>
-                    <td><?php echo htmlspecialchars(substr($apt['symptoms'] ?? '', 0, 50)); ?><?php echo strlen($apt['symptoms'] ?? '') > 50 ? '...' : ''; ?></td>
+                    <td><?php
+                        $symptoms = $apt['symptoms'] ?? '';
+                        echo htmlspecialchars(substr($symptoms, 0, 50));
+                        echo strlen($symptoms) > 50 ? '...' : '';
+                    ?></td>
                     <td><?php echo $apt['doctor_name'] ?? '-'; ?></td>
                     <td>
                         <span class="badge badge-<?php 
