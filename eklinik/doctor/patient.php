@@ -54,7 +54,7 @@ $stmt = $conn->prepare("SELECT u.*, MAX(a.appointment_date) as last_visit, COUNT
     LEFT JOIN appointments a ON u.id = a.user_id
     WHERE u.role = 'student'
     GROUP BY u.id
-    ORDER BY last_visit IS NULL, last_visit DESC");
+    ORDER BY MAX(a.appointment_date) IS NULL, MAX(a.appointment_date) DESC");
 $stmt->execute();
 $patientList = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
