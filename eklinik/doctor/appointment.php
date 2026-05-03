@@ -157,7 +157,7 @@ ob_start();
                     </td>
                     <td><?php echo htmlspecialchars($apt['matrix_no'] ?? '-'); ?></td>
                     <td><?php echo formatTime($apt['appointment_time'], 'h:i A'); ?></td>
-                    <td><?php echo htmlspecialchars(substr($apt['symptoms'] ?? '', 0, 40)); ?><?php echo strlen($apt['symptoms'] ?? '') > 40 ? '...' : ''; ?></td>
+                    <td><?php echo htmlspecialchars(substr($apt['symptoms'] ?? '', 0, 40)); ?><?php echo (strlen($apt['symptoms'] ?? '') > 40) ? '...' : ''; ?></td>
                     <td>
                         <span class="badge badge-<?php 
                             echo $apt['status'] === 'completed' ? 'success' : 
