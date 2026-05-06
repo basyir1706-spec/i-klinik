@@ -92,6 +92,7 @@ function verifyCSRFToken($token) {
 // Get unread notification count
 function getUnreadNotificationCount($userId) {
     $conn = getDBConnection();
+    if (!$conn) return 0;
     $stmt = $conn->prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0");
     $stmt->bind_param("i", $userId);
     $stmt->execute();
@@ -104,6 +105,7 @@ function getUnreadNotificationCount($userId) {
 // Get current queue number for today's appointments
 function getCurrentQueueNumber($userId) {
     $conn = getDBConnection();
+    if (!$conn) return null;
     $today = date('Y-m-d');
     $stmt = $conn->prepare("SELECT queue_number, status FROM appointments WHERE user_id = ? AND appointment_date = ? ORDER BY queue_number ASC");
     $stmt->bind_param("is", $userId, $today);
@@ -120,6 +122,7 @@ function getCurrentQueueNumber($userId) {
 // Get today's queue count
 function getTodayQueueCount() {
     $conn = getDBConnection();
+    if (!$conn) return 0;
     $today = date('Y-m-d');
     $stmt = $conn->prepare("SELECT COUNT(*) as count FROM appointments WHERE appointment_date = ? AND status != 'cancelled'");
     $stmt->bind_param("s", $today);
@@ -143,6 +146,7 @@ function formatTime($time, $format = 'h:i A') {
 // Get user info by ID
 function getUserInfo($userId) {
     $conn = getDBConnection();
+    if (!$conn) return null;
     $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
     $stmt->bind_param("i", $userId);
     $stmt->execute();
@@ -155,6 +159,7 @@ function getUserInfo($userId) {
 // Create notification
 function createNotification($userId, $title, $message, $type = 'general') {
     $conn = getDBConnection();
+    if (!$conn) return null;
     $stmt = $conn->prepare("INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("isss", $userId, $title, $message, $type);
     $stmt->execute();
@@ -166,6 +171,7 @@ function createNotification($userId, $title, $message, $type = 'general') {
 // Log activity
 function logActivity($userId, $activity, $description = '') {
     $conn = getDBConnection();
+    if (!$conn) return null;
     $stmt = $conn->prepare("INSERT INTO activity_logs (user_id, activity, description) VALUES (?, ?, ?)");
     $stmt->bind_param("iss", $userId, $activity, $description);
     $stmt->execute();
@@ -175,6 +181,7 @@ function logActivity($userId, $activity, $description = '') {
 // Get next queue number for today
 function getNextQueueNumber() {
     $conn = getDBConnection();
+    if (!$conn) return 1;
     $today = date('Y-m-d');
     $stmt = $conn->prepare("SELECT COALESCE(MAX(queue_number), 0) + 1 as next_queue FROM appointments WHERE appointment_date = ?");
     $stmt->bind_param("s", $today);
