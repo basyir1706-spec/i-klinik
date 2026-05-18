@@ -259,7 +259,7 @@ ob_start();
                 <tr>
                     <td><?php echo date('d/m/Y h:i A', strtotime($report['reported_at'])); ?></td>
                     <td><?php echo htmlspecialchars($report['student_name']); ?></td>
-                    <td><?php echo htmlspecialchars($report['matrix_no'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(($report['matrix_no'] ?? '-')); ?></td>
                     <td><?php echo htmlspecialchars($report['phone']); ?></td>
                     <td><?php echo htmlspecialchars($report['department']); ?></td>
                     <td><?php echo htmlspecialchars(substr($report['emergency_description'], 0, 50)); ?><?php echo strlen($report['emergency_description']) > 50 ? '...' : ''; ?></td>
@@ -303,8 +303,8 @@ ob_start();
                 <?php foreach ($inProgressReports as $report): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($report['student_name']); ?></td>
-                    <td><?php echo $report['driver_name'] ?? 'Belum Ditugaskan'; ?></td>
-                    <td><?php echo $report['vehicle_number'] ?? '-'; ?></td>
+                    <td><?php echo ($report['driver_name'] ?? 'Belum Ditugaskan'); ?></td>
+                    <td><?php echo ($report['vehicle_number'] ?? '-'); ?></td>
                     <td>
                         <span class="badge badge-info">Sedang Diproses</span>
                     </td>
@@ -348,7 +348,7 @@ ob_start();
                 <?php foreach ($drivers as $driver): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($driver['name']); ?></td>
-                    <td><?php echo htmlspecialchars($driver['vehicle_number'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(($driver['vehicle_number'] ?? '-')); ?></td>
                     <td><?php echo htmlspecialchars($driver['phone']); ?></td>
                     <td>
                         <span class="badge badge-<?php 
@@ -409,7 +409,7 @@ ob_start();
                 <tr>
                     <td><?php echo htmlspecialchars($log['driver_name']); ?></td>
                     <td><?php echo htmlspecialchars($log['vehicle_number']); ?></td>
-                    <td><?php echo htmlspecialchars($log['student_name'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(($log['student_name'] ?? '-')); ?></td>
                     <td><?php echo htmlspecialchars($log['destination']); ?></td>
                     <td><?php echo $log['departure_time'] ? date('d/m/Y h:i A', strtotime($log['departure_time'])) : '-'; ?></td>
                     <td>
@@ -421,7 +421,7 @@ ob_start();
                             </button>
                         <?php endif; ?>
                     </td>
-                    <td><?php echo htmlspecialchars($log['notes'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(($log['notes'] ?? '-')); ?></td>
                 </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
