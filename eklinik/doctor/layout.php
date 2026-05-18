@@ -16,55 +16,55 @@
             </div>
             <ul class="sidebar-menu">
                 <li>
-                    <a href="<?php echo BASE_URL; ?>/doctor/dashboard.php" class="<?php echo ($activePage ?? '') === 'dashboard' ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>/doctor/dashboard.php" class="<?php echo (($activePage ?? '')) === 'dashboard' ? 'active' : ''; ?>">
                         <i class="fas fa-home"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li>
-                    <a href="<?php echo BASE_URL; ?>/doctor/appointment.php" class="<?php echo ($activePage ?? '') === 'appointment' ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>/doctor/appointment.php" class="<?php echo (($activePage ?? '')) === 'appointment' ? 'active' : ''; ?>">
                         <i class="fas fa-calendar-alt"></i>
                         <span>Appointment</span>
-                        <?php if ($appointmentNotification ?? 0 > 0): ?>
+                        <?php if (($appointmentNotification ?? 0) > 0): ?>
                             <span class="badge"><?php echo $appointmentNotification; ?></span>
                         <?php endif; ?>
                     </a>
                 </li>
                 <li>
-                    <a href="<?php echo BASE_URL; ?>/doctor/patient.php" class="<?php echo ($activePage ?? '') === 'patient' ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>/doctor/patient.php" class="<?php echo (($activePage ?? '')) === 'patient' ? 'active' : ''; ?>">
                         <i class="fas fa-procedures"></i>
                         <span>Patient</span>
                     </a>
                 </li>
                 <li>
-                    <a href="<?php echo BASE_URL; ?>/doctor/oku-unit.php" class="<?php echo ($activePage ?? '') === 'oku-unit' ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>/doctor/oku-unit.php" class="<?php echo (($activePage ?? '')) === 'oku-unit' ? 'active' : ''; ?>">
                         <i class="fas fa-wheelchair"></i>
                         <span>Unit OKU</span>
-                        <?php if ($okuNotification ?? 0 > 0): ?>
+                        <?php if (($okuNotification ?? 0) > 0): ?>
                             <span class="badge"><?php echo $okuNotification; ?></span>
                         <?php endif; ?>
                     </a>
                 </li>
                 <li>
-                    <a href="<?php echo BASE_URL; ?>/doctor/inventory.php" class="<?php echo ($activePage ?? '') === 'inventory' ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>/doctor/inventory.php" class="<?php echo (($activePage ?? '')) === 'inventory' ? 'active' : ''; ?>">
                         <i class="fas fa-boxes"></i>
                         <span>Inventory (First Aid)</span>
-                        <?php if ($inventoryNotification ?? 0 > 0): ?>
+                        <?php if (($inventoryNotification ?? 0) > 0): ?>
                             <span class="badge"><?php echo $inventoryNotification; ?></span>
                         <?php endif; ?>
                     </a>
                 </li>
                 <li>
-                    <a href="<?php echo BASE_URL; ?>/doctor/pharmacy.php" class="<?php echo ($activePage ?? '') === 'pharmacy' ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>/doctor/pharmacy.php" class="<?php echo (($activePage ?? '')) === 'pharmacy' ? 'active' : ''; ?>">
                         <i class="fas fa-pills"></i>
                         <span>Pharmacy</span>
                     </a>
                 </li>
                 <li>
-                    <a href="<?php echo BASE_URL; ?>/doctor/emergency.php" class="<?php echo ($activePage ?? '') === 'emergency' ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>/doctor/emergency.php" class="<?php echo (($activePage ?? '')) === 'emergency' ? 'active' : ''; ?>">
                         <i class="fas fa-ambulance"></i>
                         <span>Unit Kecemasan</span>
-                        <?php if ($emergencyNotification ?? 0 > 0): ?>
+                        <?php if (($emergencyNotification ?? 0) > 0): ?>
                             <span class="badge"><?php echo $emergencyNotification; ?></span>
                         <?php endif; ?>
                     </a>
@@ -96,7 +96,7 @@
                         </a>
                         <a href="<?php echo BASE_URL; ?>/doctor/notifications.php">
                             <i class="fas fa-bell"></i> Notifikasi
-                            <?php if ($totalNotifications ?? 0 > 0): ?>
+                            <?php if (($totalNotifications ?? 0) > 0): ?>
                                 <span class="badge" style="float: right;"><?php echo $totalNotifications; ?></span>
                             <?php endif; ?>
                         </a>
