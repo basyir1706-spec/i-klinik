@@ -8,7 +8,7 @@ requireRole(['student', 'staff']);
 $userId = getCurrentUserId();
 $userName = getCurrentUserName();
 $userRole = getCurrentUserRole();
-$isOKU = $_SESSION['is_oku'] ?? false;
+$isOKU = (isset($_SESSION['is_oku']) ? $_SESSION['is_oku'] : false);
 $success = '';
 $error = '';
 
@@ -112,7 +112,7 @@ ob_start();
                     foreach ($okuEquipment as $item): 
                         if ($currentCategory !== $item['category']):
                             if ($currentCategory !== '') echo '</optgroup>';
-                            echo '<optgroup label="' . htmlspecialchars($item['category'] ?? 'Lain-lain') . '">';
+                            echo ('<optgroup label="' . htmlspecialchars((isset($item['category']) ? $item['category'] : 'Lain-lain')) . '">');
                             $currentCategory = $item['category'];
                         endif;
                     ?>
@@ -176,11 +176,11 @@ ob_start();
                     <?php foreach ($okuLoans as $loan): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($loan['equipment_name']); ?></td>
-                    <td><?php echo htmlspecialchars($loan['category'] ?? '-'); ?></td>
+                    <td><?php echo (htmlspecialchars((isset($loan['category']) ? $loan['category'] : '-'))); ?></td>
                     <td><?php echo $loan['quantity']; ?></td>
                     <td><?php echo formatDate($loan['borrow_date']); ?></td>
                     <td><?php echo $loan['return_date'] ? formatDate($loan['return_date']) : '-'; ?></td>
-                    <td><?php echo $loan['approved_by_name'] ?? '-'; ?></td>
+                    <td><?php echo ((isset($loan['approved_by_name']) ? $loan['approved_by_name'] : '-')); ?></td>
                     <td>
                         <span class="badge badge-<?php 
                             echo $loan['status'] === 'returned' ? 'success' : 
@@ -190,7 +190,7 @@ ob_start();
                             <?php echo ucfirst($loan['status']); ?>
                         </span>
                     </td>
-                    <td><?php echo htmlspecialchars($loan['notes'] ?? '-'); ?></td>
+                    <td><?php echo (htmlspecialchars((isset($loan['notes']) ? $loan['notes'] : '-'))); ?></td>
                 </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
