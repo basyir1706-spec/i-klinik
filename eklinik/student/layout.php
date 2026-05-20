@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle ?? 'Dashboard'; ?> - i-Klinik</title>
+    <title><?php echo ((isset($pageTitle) ? $pageTitle : 'Dashboard')); ?> - i-Klinik</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/style.css">
 </head>
@@ -16,35 +16,35 @@
             </div>
             <ul class="sidebar-menu">
                 <li>
-                    <a href="<?php echo BASE_URL; ?>/student/dashboard.php" class="<?php echo ($activePage ?? '') === 'dashboard' ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>/student/dashboard.php" class="<?php echo (((isset($activePage) ? $activePage : '')) === 'dashboard' ? 'active' : ''); ?>">
                         <i class="fas fa-home"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li>
-                    <a href="<?php echo BASE_URL; ?>/student/appointment.php" class="<?php echo ($activePage ?? '') === 'appointment' ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>/student/appointment.php" class="<?php echo (((isset($activePage) ? $activePage : '')) === 'appointment' ? 'active' : ''); ?>">
                         <i class="fas fa-calendar-alt"></i>
                         <span>Appointment</span>
-                        <?php if ($appointmentNotification ?? 0 > 0): ?>
+                        <?php if ((isset($appointmentNotification) ? $appointmentNotification : 0 )> 0): ?>
                             <span class="badge"><?php echo $appointmentNotification; ?></span>
                         <?php endif; ?>
                     </a>
                 </li>
                 <li>
-                    <a href="<?php echo BASE_URL; ?>/student/stock-loan.php" class="<?php echo ($activePage ?? '') === 'stock-loan' ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>/student/stock-loan.php" class="<?php echo (((isset($activePage) ? $activePage : '')) === 'stock-loan' ? 'active' : ''); ?>">
                         <i class="fas fa-box"></i>
                         <span>Pinjaman Stok</span>
-                        <?php if ($stockNotification ?? 0 > 0): ?>
+                        <?php if ((isset($stockNotification) ? $stockNotification : 0 )> 0): ?>
                             <span class="badge"><?php echo $stockNotification; ?></span>
                         <?php endif; ?>
                     </a>
                 </li>
-                <?php if ($isOKU ?? false): ?>
+                <?php if ((isset($isOKU) ? $isOKU : false)): ?>
                 <li>
-                    <a href="<?php echo BASE_URL; ?>/student/oku-loan.php" class="<?php echo ($activePage ?? '') === 'oku-loan' ? 'active' : ''; ?>">
+                    <a href="<?php echo BASE_URL; ?>/student/oku-loan.php" class="<?php echo (((isset($activePage) ? $activePage : '')) === 'oku-loan' ? 'active' : ''); ?>">
                         <i class="fas fa-wheelchair"></i>
                         <span>Pinjaman OKU</span>
-                        <?php if ($okuNotification ?? 0 > 0): ?>
+                        <?php if ((isset($okuNotification) ? $okuNotification : 0 )> 0): ?>
                             <span class="badge"><?php echo $okuNotification; ?></span>
                         <?php endif; ?>
                     </a>
@@ -57,7 +57,7 @@
         <div class="main-content">
             <!-- Top Navbar -->
             <nav class="top-navbar">
-                <h1 class="page-title"><?php echo $pageTitle ?? 'Dashboard'; ?></h1>
+                <h1 class="page-title"><?php echo ((isset($pageTitle) ? $pageTitle : 'Dashboard')); ?></h1>
                 
                 <div class="user-menu">
                     <div class="user-menu-toggle" onclick="toggleUserDropdown()">
@@ -77,7 +77,7 @@
                         </a>
                         <a href="<?php echo BASE_URL; ?>/student/notifications.php">
                             <i class="fas fa-bell"></i> Notifikasi
-                            <?php if ($totalNotifications ?? 0 > 0): ?>
+                            <?php if ((isset($totalNotifications) ? $totalNotifications : 0 )> 0): ?>
                                 <span class="badge" style="float: right;"><?php echo $totalNotifications; ?></span>
                             <?php endif; ?>
                         </a>

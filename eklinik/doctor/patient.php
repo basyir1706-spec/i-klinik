@@ -54,7 +54,7 @@ $stmt = $conn->prepare("SELECT u.*, MAX(a.appointment_date) as last_visit, COUNT
     LEFT JOIN appointments a ON u.id = a.user_id
     WHERE u.role = 'student'
     GROUP BY u.id
-    ORDER BY last_visit IS NULL, last_visit DESC");
+    ORDER BY MAX(a.appointment_date) IS NULL, MAX(a.appointment_date) DESC");
 $stmt->execute();
 $patientList = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
@@ -132,17 +132,17 @@ ob_start();
                             <span class="badge badge-info">OKU</span>
                         <?php endif; ?>
                     </td>
-                    <td><?php echo htmlspecialchars($patient['phone'] ?? '-'); ?></td>
-                    <td><?php echo htmlspecialchars($patient['ic_number'] ?? '-'); ?></td>
+                    <td><?php echo (htmlspecialchars((isset($patient['phone']) ? $patient['phone'] : '-'))); ?></td>
+                    <td><?php echo (htmlspecialchars((isset($patient['ic_number']) ? $patient['ic_number'] : '-'))); ?></td>
                     <td>
                         <span class="badge badge-<?php 
                             echo $patient['blood_type'] === 'O-' ? 'danger' : 'primary';
                         ?>">
-                            <?php echo $patient['blood_type'] ?? '-'; ?>
+                            <?php echo ((isset($patient['blood_type']) ? $patient['blood_type'] : '-')); ?>
                         </span>
                     </td>
                     <td><?php echo $patient['last_visit'] ? formatDate($patient['last_visit']) : 'Never'; ?></td>
-                    <td><?php echo $patient['total_visits'] ?? 0; ?></td>
+                    <td><?php echo ((isset($patient['total_visits']) ? $patient['total_visits'] : 0)); ?></td>
                     <td>
                         <button type="button" class="btn btn-info btn-sm" 
                                 onclick="openPatientModal(<?php echo htmlspecialchars(json_encode($patient)); ?>)">
