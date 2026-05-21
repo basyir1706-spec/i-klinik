@@ -92,7 +92,9 @@ function verifyCSRFToken($token) {
 // Get unread notification count
 function getUnreadNotificationCount($userId) {
     $conn = getDBConnection();
+    if (!$conn) return 0;
     $stmt = $conn->prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0");
+    if (!$stmt) return 0;
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -104,8 +106,10 @@ function getUnreadNotificationCount($userId) {
 // Get current queue number for today's appointments
 function getCurrentQueueNumber($userId) {
     $conn = getDBConnection();
+    if (!$conn) return null;
     $today = date('Y-m-d');
     $stmt = $conn->prepare("SELECT queue_number, status FROM appointments WHERE user_id = ? AND appointment_date = ? ORDER BY queue_number ASC");
+    if (!$stmt) return null;
     $stmt->bind_param("is", $userId, $today);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -120,8 +124,10 @@ function getCurrentQueueNumber($userId) {
 // Get today's queue count
 function getTodayQueueCount() {
     $conn = getDBConnection();
+    if (!$conn) return 0;
     $today = date('Y-m-d');
     $stmt = $conn->prepare("SELECT COUNT(*) as count FROM appointments WHERE appointment_date = ? AND status != 'cancelled'");
+    if (!$stmt) return 0;
     $stmt->bind_param("s", $today);
     $stmt->execute();
     $result = $stmt->get_result();
