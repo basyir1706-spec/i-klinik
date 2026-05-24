@@ -180,7 +180,7 @@ ob_start();
                     <td><?php echo formatTime($apt['appointment_time'], 'h:i A'); ?></td>
                     <td>#<?php echo $apt['queue_number']; ?></td>
                     <td><?php echo htmlspecialchars(substr($apt['symptoms'] ?? '', 0, 50)); ?><?php echo strlen($apt['symptoms'] ?? '') > 50 ? '...' : ''; ?></td>
-                    <td><?php echo $apt['doctor_name'] ?? '-'; ?></td>
+                    <td><?php echo !empty($apt['doctor_name']) ? $apt['doctor_name'] : '-'; ?></td>
                     <td>
                         <span class="badge badge-<?php 
                             echo $apt['status'] === 'completed' ? 'success' : 
