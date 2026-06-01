@@ -47,7 +47,7 @@ function getCurrentUserRole() {
 
 // Get current user name
 function getCurrentUserName() {
-    return $_SESSION['name'] ?? 'User';
+    return !empty($_SESSION['name']) ? $_SESSION['name'] : 'User';
 }
 
 // Require login
