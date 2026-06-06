@@ -10,14 +10,16 @@ echo "<hr>";
 // Test 1: Database Connection
 echo "<h2>1. Database Connection Test</h2>";
 try {
-    $conn = new mysqli('localhost', 'root', '', 'eklinik');
+    $conn = @new mysqli('localhost', 'root', '', 'eklinik');
     if ($conn->connect_error) {
         echo "<p style='color: red;'>❌ Connection failed: " . $conn->connect_error . "</p>";
+        $conn = null;
     } else {
         echo "<p style='color: green;'>✓ Database connection successful!</p>";
     }
 } catch (Exception $e) {
     echo "<p style='color: red;'>❌ Connection failed: " . $e->getMessage() . "</p>";
+    $conn = null;
 }
 
 // Test 2: Check Users Table
@@ -37,8 +39,8 @@ if (isset($conn) && $conn) {
             echo "<tr>";
             echo "<td>{$user['id']}</td>";
             echo "<td>{$user['name']}</td>";
-            echo "<td>{$user['email'] ?? '-'}</td>";
-            echo "<td>{$user['matrix_no'] ?? '-'}</td>";
+            echo "<td>" . ($user['email'] ?? '-') . "</td>";
+            echo "<td>" . ($user['matrix_no'] ?? '-') . "</td>";
             echo "<td>{$user['role']}</td>";
             echo "<td>{$user['password']}</td>";
             echo "</tr>";
