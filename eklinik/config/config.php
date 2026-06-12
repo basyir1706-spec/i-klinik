@@ -92,6 +92,7 @@ function verifyCSRFToken($token) {
 // Get unread notification count
 function getUnreadNotificationCount($userId) {
     $conn = getDBConnection();
+    if (!$conn) return 0;
     $stmt = $conn->prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0");
     $stmt->bind_param("i", $userId);
     $stmt->execute();
