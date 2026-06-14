@@ -8,7 +8,7 @@ requireRole(['student', 'staff']);
 $userId = getCurrentUserId();
 $userName = getCurrentUserName();
 $userRole = getCurrentUserRole();
-$isOKU = $_SESSION['is_oku'] ?? false;
+$isOKU = isset($_SESSION['is_oku']) ? $_SESSION['is_oku'] : false;
 
 $conn = getDBConnection();
 
@@ -23,13 +23,13 @@ $totalNotifications = getUnreadNotificationCount($userId);
 $stmt = $conn->prepare("SELECT COUNT(*) as count FROM appointments WHERE user_id = ? AND status = 'pending'");
 $stmt->bind_param("i", $userId);
 $stmt->execute();
-$pendingAppointments = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
+$res = $stmt->get_result()->fetch_assoc(); $pendingAppointments = isset($res['count']) ? $res['count'] : 0;
 
 // Get active stock loans
 $stmt = $conn->prepare("SELECT COUNT(*) as count FROM stock_loans WHERE user_id = ? AND status IN ('pending', 'approved')");
 $stmt->bind_param("i", $userId);
 $stmt->execute();
-$activeLoans = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
+$res = $stmt->get_result()->fetch_assoc(); $activeLoans = isset($res['count']) ? $res['count'] : 0;
 
 // Get today's appointments list
 $stmt = $conn->prepare("SELECT a.*, u.name FROM appointments a JOIN users u ON a.user_id = u.id WHERE a.appointment_date = CURDATE() ORDER BY a.queue_number ASC");
