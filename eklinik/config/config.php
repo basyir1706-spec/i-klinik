@@ -37,17 +37,17 @@ function hasRole($role) {
 
 // Get current user ID
 function getCurrentUserId() {
-    return $_SESSION['user_id'] ?? null;
+    return isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 }
 
 // Get current user role
 function getCurrentUserRole() {
-    return $_SESSION['role'] ?? null;
+    return isset($_SESSION['role']) ? $_SESSION['role'] : null;
 }
 
 // Get current user name
 function getCurrentUserName() {
-    return $_SESSION['name'] ?? 'User';
+    return isset($_SESSION['name']) ? $_SESSION['name'] : 'User';
 }
 
 // Require login
@@ -98,7 +98,7 @@ function getUnreadNotificationCount($userId) {
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     closeDBConnection($conn);
-    return $row['count'] ?? 0;
+    return isset($row['count']) ? $row['count'] : 0;
 }
 
 // Get current queue number for today's appointments
@@ -127,7 +127,7 @@ function getTodayQueueCount() {
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     closeDBConnection($conn);
-    return $row['count'] ?? 0;
+    return isset($row['count']) ? $row['count'] : 0;
 }
 
 // Format date
@@ -182,6 +182,6 @@ function getNextQueueNumber() {
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     closeDBConnection($conn);
-    return $row['next_queue'] ?? 1;
+    return isset($row['next_queue']) ? $row['next_queue'] : 1;
 }
 ?>

@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['email'] = $user['email'];
                     $_SESSION['matrix_no'] = $user['matrix_no'];
                     $_SESSION['role'] = $user['role'];
-                    $_SESSION['is_oku'] = $user['is_oku'] ?? 0;
+                    $_SESSION['is_oku'] = isset($user['is_oku']) ? $user['is_oku'] : 0;
                     $_SESSION['department'] = $user['department'];
                     $_SESSION['course'] = $user['course'];
                     
