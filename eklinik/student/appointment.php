@@ -8,7 +8,7 @@ requireRole(['student', 'staff']);
 $userId = getCurrentUserId();
 $userName = getCurrentUserName();
 $userRole = getCurrentUserRole();
-$isOKU = $_SESSION['is_oku'] ?? false;
+$isOKU = isset($_SESSION['is_oku']) ? $_SESSION['is_oku'] : false;
 $success = '';
 $error = '';
 
@@ -179,8 +179,8 @@ ob_start();
                     <td><?php echo formatDate($apt['appointment_date']); ?></td>
                     <td><?php echo formatTime($apt['appointment_time'], 'h:i A'); ?></td>
                     <td>#<?php echo $apt['queue_number']; ?></td>
-                    <td><?php echo htmlspecialchars(substr($apt['symptoms'] ?? '', 0, 50)); ?><?php echo strlen($apt['symptoms'] ?? '') > 50 ? '...' : ''; ?></td>
-                    <td><?php echo $apt['doctor_name'] ?? '-'; ?></td>
+                    <td><?php echo htmlspecialchars(substr(isset($apt['symptoms']) ? $apt['symptoms'] : '', 0, 50)); ?><?php echo strlen(isset($apt['symptoms']) ? $apt['symptoms'] : '') > 50 ? '...' : ''; ?></td>
+                    <td><?php echo !empty($apt['doctor_name']) ? $apt['doctor_name'] : '-'; ?></td>
                     <td>
                         <span class="badge badge-<?php 
                             echo $apt['status'] === 'completed' ? 'success' : 
