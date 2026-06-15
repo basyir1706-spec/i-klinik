@@ -178,12 +178,12 @@ ob_start();
                 <?php foreach ($pendingLoans as $loan): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($loan['user_name']); ?></td>
-                    <td><?php echo htmlspecialchars($loan['matrix_no'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(!empty($loan['matrix_no']) ? $loan['matrix_no'] : '-'); ?></td>
                     <td><?php echo htmlspecialchars($loan['equipment_name']); ?></td>
-                    <td><?php echo htmlspecialchars($loan['category'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(!empty($loan['category']) ? $loan['category'] : '-'); ?></td>
                     <td><?php echo $loan['quantity']; ?></td>
                     <td><?php echo formatDate($loan['borrow_date']); ?></td>
-                    <td><?php echo htmlspecialchars($loan['notes'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(!empty($loan['notes']) ? $loan['notes'] : '-'); ?></td>
                     <td>
                         <form method="POST" style="display: inline;">
                             <input type="hidden" name="loan_id" value="<?php echo $loan['id']; ?>">
@@ -236,7 +236,7 @@ ob_start();
                 <?php foreach ($activeLoans as $loan): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($loan['user_name']); ?></td>
-                    <td><?php echo htmlspecialchars($loan['matrix_no'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(!empty($loan['matrix_no']) ? $loan['matrix_no'] : '-'); ?></td>
                     <td><?php echo htmlspecialchars($loan['equipment_name']); ?></td>
                     <td><?php echo $loan['quantity']; ?></td>
                     <td><?php echo formatDate($loan['borrow_date']); ?></td>
@@ -287,7 +287,7 @@ ob_start();
                 <?php foreach ($okuEquipment as $item): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($item['name']); ?></td>
-                    <td><?php echo htmlspecialchars($item['category'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(!empty($item['category']) ? $item['category'] : '-'); ?></td>
                     <td><?php echo $item['quantity']; ?></td>
                     <td><?php echo $item['available_quantity']; ?></td>
                     <td>
