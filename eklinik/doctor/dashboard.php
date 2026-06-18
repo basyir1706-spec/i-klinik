@@ -14,7 +14,7 @@ $conn = getDBConnection();
 // Get appointment count (pending today)
 $stmt = $conn->prepare("SELECT COUNT(*) as count FROM appointments WHERE appointment_date = CURDATE() AND status IN ('pending', 'confirmed', 'in_progress')");
 $stmt->execute();
-$appointmentCount = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
+$appointmentCount = (($stmt->get_result()->fetch_assoc() ?: ['count' => 0])['count'] ?? 0);
 
 // Get inventory stock percentage
 $stmt = $conn->prepare("SELECT 
@@ -30,17 +30,17 @@ $inventoryPercentage = $inventoryStats['total'] > 0
 // Get pharmacy medicine count
 $stmt = $conn->prepare("SELECT SUM(stock_quantity) as total FROM medicines WHERE status != 'expired'");
 $stmt->execute();
-$pharmacyCount = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
+$pharmacyCount = (($stmt->get_result()->fetch_assoc() ?: ['total' => 0])['total'] ?? 0);
 
 // Get OKU equipment borrowed count
 $stmt = $conn->prepare("SELECT SUM(quantity) as count FROM oku_equipment_loans WHERE status IN ('pending', 'approved')");
 $stmt->execute();
-$okuBorrowed = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
+$okuBorrowed = (($stmt->get_result()->fetch_assoc() ?: ['count' => 0])['count'] ?? 0);
 
 // Get critical patients count
 $stmt = $conn->prepare("SELECT COUNT(*) as count FROM medical_records WHERE is_critical = 1 AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
 $stmt->execute();
-$criticalPatients = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
+$criticalPatients = (($stmt->get_result()->fetch_assoc() ?: ['count' => 0])['count'] ?? 0);
 
 // Get recent activities
 $stmt = $conn->prepare("SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 10");
@@ -53,17 +53,17 @@ $totalNotifications = getUnreadNotificationCount($userId);
 // Get pending stock loans
 $stmt = $conn->prepare("SELECT COUNT(*) as count FROM stock_loans WHERE status = 'pending'");
 $stmt->execute();
-$pendingStockLoans = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
+$pendingStockLoans = (($stmt->get_result()->fetch_assoc() ?: ['count' => 0])['count'] ?? 0);
 
 // Get pending OKU loans
 $stmt = $conn->prepare("SELECT COUNT(*) as count FROM oku_equipment_loans WHERE status = 'pending'");
 $stmt->execute();
-$pendingOKULoans = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
+$pendingOKULoans = (($stmt->get_result()->fetch_assoc() ?: ['count' => 0])['count'] ?? 0);
 
 // Get pending emergency reports
 $stmt = $conn->prepare("SELECT COUNT(*) as count FROM emergency_reports WHERE status = 'pending'");
 $stmt->execute();
-$pendingEmergency = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
+$pendingEmergency = (($stmt->get_result()->fetch_assoc() ?: ['count' => 0])['count'] ?? 0);
 
 closeDBConnection($conn);
 
