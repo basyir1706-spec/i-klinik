@@ -228,13 +228,13 @@ ob_start();
                     foreach ($medicines as $med): 
                         if ($currentCategory !== $med['category']):
                             if ($currentCategory !== '') echo '</tbody><tbody>';
-                            echo '<tr><td colspan="7" style="background: rgba(0, 255, 0, 0.1); font-weight: bold; color: var(--primary-green);">' . htmlspecialchars($med['category'] ?? 'Lain-lain') . '</td></tr>';
+                            echo '<tr><td colspan="7" style="background: rgba(0, 255, 0, 0.1); font-weight: bold; color: var(--primary-green);">' . htmlspecialchars((isset($med['category']) ? $med['category'] : 'Lain-lain')) . '</td></tr>';
                             $currentCategory = $med['category'];
                         endif;
                     ?>
                 <tr>
                     <td><?php echo htmlspecialchars($med['name']); ?></td>
-                    <td><?php echo htmlspecialchars($med['category'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars((isset($med['category']) ? $med['category'] : '-')); ?></td>
                     <td><?php echo $med['stock_quantity']; ?></td>
                     <td>RM <?php echo number_format($med['price'], 2); ?></td>
                     <td><?php echo formatDate($med['expiry_date']); ?></td>
@@ -294,8 +294,8 @@ ob_start();
                     <td><?php echo htmlspecialchars($record['patient_name']); ?></td>
                     <td><?php echo htmlspecialchars($record['medicine_name']); ?></td>
                     <td><?php echo $record['quantity']; ?></td>
-                    <td><?php echo htmlspecialchars($record['dosage'] ?? '-'); ?></td>
-                    <td><?php echo htmlspecialchars($record['dispensed_by_name'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars((isset($record['dosage']) ? $record['dosage'] : '-')); ?></td>
+                    <td><?php echo htmlspecialchars((isset($record['dispensed_by_name']) ? $record['dispensed_by_name'] : '-')); ?></td>
                 </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
