@@ -1,0 +1,7 @@
+[Mon Jun 29 08:55:07 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
+[Mon Jun 29 08:55:20 2026] [::1]:33300 Accepted
+[Mon Jun 29 08:55:20 2026] [::1]:33300 [200]: GET /setup_checker.php
+[Mon Jun 29 08:55:20 2026] [::1]:33300 Closing
+[Mon Jun 29 08:55:33 2026] [::1]:50284 Accepted
+[Mon Jun 29 08:55:33 2026] [::1]:50284 [200]: GET /test_connection.php
+[Mon Jun 29 08:55:33 2026] [::1]:50284 Closing
