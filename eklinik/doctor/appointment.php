@@ -33,7 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $conn->prepare("SELECT user_id FROM appointments WHERE id = ?");
         $stmt->bind_param("i", $appointmentId);
         $stmt->execute();
-        $patientId = $stmt->get_result()->fetch_assoc()['user_id'];
+        $row = $stmt->get_result()->fetch_assoc();
+        $patientId = $row ? $row['user_id'] : null;
         
         // Create medical record
         $stmt = $conn->prepare("INSERT INTO medical_records (patient_id, doctor_id, appointment_id, diagnosis, treatment, prescription, notes, is_critical) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
