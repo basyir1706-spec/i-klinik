@@ -23,13 +23,15 @@ $totalNotifications = getUnreadNotificationCount($userId);
 $stmt = $conn->prepare("SELECT COUNT(*) as count FROM appointments WHERE user_id = ? AND status = 'pending'");
 $stmt->bind_param("i", $userId);
 $stmt->execute();
-$pendingAppointments = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
+$result_appointments = $stmt->get_result()->fetch_assoc();
+$pendingAppointments = $result_appointments ? ($result_appointments['count'] ?? 0) : 0;
 
 // Get active stock loans
 $stmt = $conn->prepare("SELECT COUNT(*) as count FROM stock_loans WHERE user_id = ? AND status IN ('pending', 'approved')");
 $stmt->bind_param("i", $userId);
 $stmt->execute();
-$activeLoans = $stmt->get_result()->fetch_assoc()['count'] ?? 0;
+$result_loans = $stmt->get_result()->fetch_assoc();
+$activeLoans = $result_loans ? ($result_loans['count'] ?? 0) : 0;
 
 // Get today's appointments list
 $stmt = $conn->prepare("SELECT a.*, u.name FROM appointments a JOIN users u ON a.user_id = u.id WHERE a.appointment_date = CURDATE() ORDER BY a.queue_number ASC");
