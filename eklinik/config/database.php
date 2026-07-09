@@ -11,10 +11,15 @@ define('DB_NAME', 'eklinik');
 
 // Create connection with error handling
 function getDBConnection() {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
-    
-    if ($conn->connect_error) {
-        error_log("MySQL connection failed: " . $conn->connect_error);
+    try {
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
+
+        if ($conn->connect_error) {
+            error_log("MySQL connection failed: " . $conn->connect_error);
+            return null;
+        }
+    } catch (Exception $e) {
+        error_log("MySQL connection exception: " . $e->getMessage());
         return null;
     }
     
@@ -38,10 +43,14 @@ function closeDBConnection($conn) {
 
 // Check if database exists and is accessible
 function checkDatabaseConnection() {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
-    
-    if ($conn->connect_error) {
-        return ['success' => false, 'error' => 'MySQL connection failed: ' . $conn->connect_error];
+    try {
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
+
+        if ($conn->connect_error) {
+            return ['success' => false, 'error' => 'MySQL connection failed: ' . $conn->connect_error];
+        }
+    } catch (Exception $e) {
+        return ['success' => false, 'error' => 'MySQL connection exception: ' . $e->getMessage()];
     }
     
     $result = $conn->query("SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '" . DB_NAME . "'");
