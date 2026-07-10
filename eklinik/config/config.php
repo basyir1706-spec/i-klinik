@@ -98,7 +98,7 @@ function getUnreadNotificationCount($userId) {
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     closeDBConnection($conn);
-    return $row['count'] ?? 0;
+    return $row ? ($row['count'] ?? 0) : 0;
 }
 
 // Get current queue number for today's appointments
@@ -127,7 +127,7 @@ function getTodayQueueCount() {
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     closeDBConnection($conn);
-    return $row['count'] ?? 0;
+    return $row ? ($row['count'] ?? 0) : 0;
 }
 
 // Format date
@@ -182,6 +182,6 @@ function getNextQueueNumber() {
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     closeDBConnection($conn);
-    return $row['next_queue'] ?? 1;
+    return $row ? ($row['next_queue'] ?? 1) : 1;
 }
 ?>
