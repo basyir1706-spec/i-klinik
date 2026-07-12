@@ -82,6 +82,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($user['role'] === 'doctor') {
                         header("Location: " . BASE_URL . "/doctor/dashboard.php");
                         exit();
+                    } elseif ($user['role'] === 'staff') {
+                        // For now staff shares student dashboard view for basics or wait for staff specific page
+                        header("Location: " . BASE_URL . "/student/dashboard.php");
+                        exit();
                     } else {
                         header("Location: " . BASE_URL . "/student/dashboard.php");
                         exit();
