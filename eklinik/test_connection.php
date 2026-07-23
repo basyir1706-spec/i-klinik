@@ -37,8 +37,8 @@ if (isset($conn) && $conn) {
             echo "<tr>";
             echo "<td>{$user['id']}</td>";
             echo "<td>{$user['name']}</td>";
-            echo "<td>{$user['email'] ?? '-'}</td>";
-            echo "<td>{$user['matrix_no'] ?? '-'}</td>";
+            $email = $user['email'] ?? '-'; echo "<td>$email</td>";
+            $matrix_no = $user['matrix_no'] ?? '-'; echo "<td>$matrix_no</td>";
             echo "<td>{$user['role']}</td>";
             echo "<td>{$user['password']}</td>";
             echo "</tr>";
