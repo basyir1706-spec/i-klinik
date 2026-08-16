@@ -155,9 +155,9 @@ ob_start();
                             <span class="badge badge-info" style="margin-left: 5px;">OKU</span>
                         <?php endif; ?>
                     </td>
-                    <td><?php echo htmlspecialchars($apt['matrix_no'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(isset($apt['matrix_no']) ? $apt['matrix_no'] : '-'); ?></td>
                     <td><?php echo formatTime($apt['appointment_time'], 'h:i A'); ?></td>
-                    <td><?php echo htmlspecialchars(substr($apt['symptoms'] ?? '', 0, 40)); ?><?php echo strlen($apt['symptoms'] ?? '') > 40 ? '...' : ''; ?></td>
+                    <td><?php echo htmlspecialchars(substr((isset($apt['symptoms']) ? $apt['symptoms'] : ''), 0, 40)); ?><?php echo strlen(isset($apt['symptoms']) ? $apt['symptoms'] : '') > 40 ? '...' : ''; ?></td>
                     <td>
                         <span class="badge badge-<?php 
                             echo $apt['status'] === 'completed' ? 'success' : 
