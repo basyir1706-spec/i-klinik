@@ -304,7 +304,7 @@ ob_start();
                 <tr>
                     <td><?php echo htmlspecialchars($report['student_name']); ?></td>
                     <td><?php echo $report['driver_name'] ?? 'Belum Ditugaskan'; ?></td>
-                    <td><?php echo $report['vehicle_number'] ?? '-'; ?></td>
+                    <td><?php echo ($report['vehicle_number'] ?? '-'); ?></td>
                     <td>
                         <span class="badge badge-info">Sedang Diproses</span>
                     </td>

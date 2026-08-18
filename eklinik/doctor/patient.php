@@ -138,11 +138,11 @@ ob_start();
                         <span class="badge badge-<?php 
                             echo $patient['blood_type'] === 'O-' ? 'danger' : 'primary';
                         ?>">
-                            <?php echo $patient['blood_type'] ?? '-'; ?>
+                            <?php echo ($patient['blood_type'] ?? '-'); ?>
                         </span>
                     </td>
                     <td><?php echo $patient['last_visit'] ? formatDate($patient['last_visit']) : 'Never'; ?></td>
-                    <td><?php echo $patient['total_visits'] ?? 0; ?></td>
+                    <td><?php echo ($patient['total_visits'] ?? 0); ?></td>
                     <td>
                         <button type="button" class="btn btn-info btn-sm" 
                                 onclick="openPatientModal(<?php echo htmlspecialchars(json_encode($patient)); ?>)">
