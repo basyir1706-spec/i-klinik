@@ -10,7 +10,12 @@ echo "<hr>";
 // Test 1: Database Connection
 echo "<h2>1. Database Connection Test</h2>";
 try {
-    $conn = new mysqli('localhost', 'root', '', 'eklinik');
+    try {
+        mysqli_report(MYSQLI_REPORT_OFF);
+        $conn = new mysqli('localhost', 'root', '', 'eklinik');
+    } catch (Exception $e) {
+        $conn = null;
+    }
     if ($conn->connect_error) {
         echo "<p style='color: red;'>❌ Connection failed: " . $conn->connect_error . "</p>";
     } else {
@@ -37,8 +42,8 @@ if (isset($conn) && $conn) {
             echo "<tr>";
             echo "<td>{$user['id']}</td>";
             echo "<td>{$user['name']}</td>";
-            echo "<td>{$user['email'] ?? '-'}</td>";
-            echo "<td>{$user['matrix_no'] ?? '-'}</td>";
+            echo "<td>" . (!empty($user['email']) ? $user['email'] : '-') . "</td>";
+            echo "<td>" . (!empty($user['matrix_no']) ? $user['matrix_no'] : '-') . "</td>";
             echo "<td>{$user['role']}</td>";
             echo "<td>{$user['password']}</td>";
             echo "</tr>";

@@ -187,7 +187,7 @@ ob_start();
             <i class="fas fa-boxes"></i>
         </div>
         <div class="stat-info">
-            <h3><?php echo $inventoryStats['total'] ?? 0; ?></h3>
+            <h3><?php echo ($inventoryStats['total'] ?? 0); ?></h3>
             <p>Jenis Item</p>
         </div>
     </div>
@@ -196,7 +196,7 @@ ob_start();
             <i class="fas fa-cubes"></i>
         </div>
         <div class="stat-info">
-            <h3><?php echo $inventoryStats['total_stock'] ?? 0; ?></h3>
+            <h3><?php echo ($inventoryStats['total_stock'] ?? 0); ?></h3>
             <p>Jumlah Stok</p>
         </div>
     </div>
