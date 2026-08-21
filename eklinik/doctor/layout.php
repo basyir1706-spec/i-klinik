@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle ?? 'Dashboard'; ?> - i-Klinik</title>
+    <title><?php echo ($pageTitle ?? 'Dashboard'); ?> - i-Klinik</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/style.css">
 </head>
@@ -25,7 +25,7 @@
                     <a href="<?php echo BASE_URL; ?>/doctor/appointment.php" class="<?php echo ($activePage ?? '') === 'appointment' ? 'active' : ''; ?>">
                         <i class="fas fa-calendar-alt"></i>
                         <span>Appointment</span>
-                        <?php if ($appointmentNotification ?? 0 > 0): ?>
+                        <?php if (($appointmentNotification ?? 0) > 0): ?>
                             <span class="badge"><?php echo $appointmentNotification; ?></span>
                         <?php endif; ?>
                     </a>
@@ -40,7 +40,7 @@
                     <a href="<?php echo BASE_URL; ?>/doctor/oku-unit.php" class="<?php echo ($activePage ?? '') === 'oku-unit' ? 'active' : ''; ?>">
                         <i class="fas fa-wheelchair"></i>
                         <span>Unit OKU</span>
-                        <?php if ($okuNotification ?? 0 > 0): ?>
+                        <?php if (($okuNotification ?? 0) > 0): ?>
                             <span class="badge"><?php echo $okuNotification; ?></span>
                         <?php endif; ?>
                     </a>
@@ -49,7 +49,7 @@
                     <a href="<?php echo BASE_URL; ?>/doctor/inventory.php" class="<?php echo ($activePage ?? '') === 'inventory' ? 'active' : ''; ?>">
                         <i class="fas fa-boxes"></i>
                         <span>Inventory (First Aid)</span>
-                        <?php if ($inventoryNotification ?? 0 > 0): ?>
+                        <?php if (($inventoryNotification ?? 0) > 0): ?>
                             <span class="badge"><?php echo $inventoryNotification; ?></span>
                         <?php endif; ?>
                     </a>
@@ -64,7 +64,7 @@
                     <a href="<?php echo BASE_URL; ?>/doctor/emergency.php" class="<?php echo ($activePage ?? '') === 'emergency' ? 'active' : ''; ?>">
                         <i class="fas fa-ambulance"></i>
                         <span>Unit Kecemasan</span>
-                        <?php if ($emergencyNotification ?? 0 > 0): ?>
+                        <?php if (($emergencyNotification ?? 0) > 0): ?>
                             <span class="badge"><?php echo $emergencyNotification; ?></span>
                         <?php endif; ?>
                     </a>
@@ -76,7 +76,7 @@
         <div class="main-content">
             <!-- Top Navbar -->
             <nav class="top-navbar">
-                <h1 class="page-title"><?php echo $pageTitle ?? 'Dashboard'; ?></h1>
+                <h1 class="page-title"><?php echo ($pageTitle ?? 'Dashboard'); ?></h1>
                 
                 <div class="user-menu">
                     <div class="user-menu-toggle" onclick="toggleUserDropdown()">
@@ -96,7 +96,7 @@
                         </a>
                         <a href="<?php echo BASE_URL; ?>/doctor/notifications.php">
                             <i class="fas fa-bell"></i> Notifikasi
-                            <?php if ($totalNotifications ?? 0 > 0): ?>
+                            <?php if (($totalNotifications ?? 0) > 0): ?>
                                 <span class="badge" style="float: right;"><?php echo $totalNotifications; ?></span>
                             <?php endif; ?>
                         </a>
