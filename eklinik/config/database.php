@@ -11,7 +11,8 @@ define('DB_NAME', 'eklinik');
 
 // Create connection with error handling
 function getDBConnection() {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
+    mysqli_report(MYSQLI_REPORT_OFF);
+    $conn = @new mysqli(DB_HOST, DB_USER, DB_PASS);
     
     if ($conn->connect_error) {
         error_log("MySQL connection failed: " . $conn->connect_error);
@@ -38,7 +39,8 @@ function closeDBConnection($conn) {
 
 // Check if database exists and is accessible
 function checkDatabaseConnection() {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
+    mysqli_report(MYSQLI_REPORT_OFF);
+    $conn = @new mysqli(DB_HOST, DB_USER, DB_PASS);
     
     if ($conn->connect_error) {
         return ['success' => false, 'error' => 'MySQL connection failed: ' . $conn->connect_error];
