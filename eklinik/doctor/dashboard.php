@@ -156,7 +156,7 @@ ob_start();
             </div>
             <div class="activity-content">
                 <p><strong><?php echo htmlspecialchars($activity['activity']); ?></strong></p>
-                <p style="color: var(--gray-600);"><?php echo htmlspecialchars($activity['description'] ?? ''); ?></p>
+                <p style="color: var(--gray-600);"><?php echo htmlspecialchars(!empty($activity['description']) ? $activity['description'] : ''); ?></p>
                 <span class="time"><?php echo date('j M Y, g:i A', strtotime($activity['created_at'])); ?></span>
             </div>
         </li>
