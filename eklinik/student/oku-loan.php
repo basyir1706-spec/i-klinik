@@ -176,11 +176,11 @@ ob_start();
                     <?php foreach ($okuLoans as $loan): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($loan['equipment_name']); ?></td>
-                    <td><?php echo htmlspecialchars($loan['category'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(($loan['category'] ?? '-')); ?></td>
                     <td><?php echo $loan['quantity']; ?></td>
                     <td><?php echo formatDate($loan['borrow_date']); ?></td>
                     <td><?php echo $loan['return_date'] ? formatDate($loan['return_date']) : '-'; ?></td>
-                    <td><?php echo $loan['approved_by_name'] ?? '-'; ?></td>
+                    <td><?php echo ($loan['approved_by_name'] ?? '-'); ?></td>
                     <td>
                         <span class="badge badge-<?php 
                             echo $loan['status'] === 'returned' ? 'success' : 
@@ -190,7 +190,7 @@ ob_start();
                             <?php echo ucfirst($loan['status']); ?>
                         </span>
                     </td>
-                    <td><?php echo htmlspecialchars($loan['notes'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(($loan['notes'] ?? '-')); ?></td>
                 </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
