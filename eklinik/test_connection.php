@@ -37,8 +37,8 @@ if (isset($conn) && $conn) {
             echo "<tr>";
             echo "<td>{$user['id']}</td>";
             echo "<td>{$user['name']}</td>";
-            echo "<td>{$user['email'] ?? '-'}</td>";
-            echo "<td>{$user['matrix_no'] ?? '-'}</td>";
+            echo "<td>" . (!empty($user['email']) ? $user['email'] : '-') . "</td>";
+            echo "<td>" . (!empty($user['matrix_no']) ? $user['matrix_no'] : '-') . "</td>";
             echo "<td>{$user['role']}</td>";
             echo "<td>{$user['password']}</td>";
             echo "</tr>";
@@ -50,8 +50,8 @@ if (isset($conn) && $conn) {
 }
 
 // Test 3: Session Test
+if (session_status() === PHP_SESSION_NONE) { @session_start(); }
 echo "<h2>3. Session Test</h2>";
-session_start();
 if (session_status() === PHP_SESSION_ACTIVE) {
     echo "<p style='color: green;'>✓ Sessions are working</p>";
 } else {
@@ -64,9 +64,9 @@ echo "<p style='color: blue;'>PHP Version: " . phpversion() . "</p>";
 
 // Test 5: BASE_URL Test
 echo "<h2>5. Base URL Test</h2>";
-$base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]/eklinik";
+$base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost') . "/eklinik";
 echo "<p>Your BASE_URL should be: <code>$base_url</code></p>";
-echo "<p>Current URL: <code>" . (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]</code></p>";
+echo "<p>Current URL: <code>" . (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost') . (isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/eklinik/test_connection.php') . "</code></p>";
 
 echo "<hr>";
 echo "<h2>Test Login Credentials:</h2>";

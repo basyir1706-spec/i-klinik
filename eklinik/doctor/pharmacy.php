@@ -234,7 +234,7 @@ ob_start();
                     ?>
                 <tr>
                     <td><?php echo htmlspecialchars($med['name']); ?></td>
-                    <td><?php echo htmlspecialchars($med['category'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(!empty($med['category']) ? $med['category'] : '-'); ?></td>
                     <td><?php echo $med['stock_quantity']; ?></td>
                     <td>RM <?php echo number_format($med['price'], 2); ?></td>
                     <td><?php echo formatDate($med['expiry_date']); ?></td>
@@ -294,8 +294,8 @@ ob_start();
                     <td><?php echo htmlspecialchars($record['patient_name']); ?></td>
                     <td><?php echo htmlspecialchars($record['medicine_name']); ?></td>
                     <td><?php echo $record['quantity']; ?></td>
-                    <td><?php echo htmlspecialchars($record['dosage'] ?? '-'); ?></td>
-                    <td><?php echo htmlspecialchars($record['dispensed_by_name'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(!empty($record['dosage']) ? $record['dosage'] : '-'); ?></td>
+                    <td><?php echo htmlspecialchars(!empty($record['dispensed_by_name']) ? $record['dispensed_by_name'] : '-'); ?></td>
                 </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
