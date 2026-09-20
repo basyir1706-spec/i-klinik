@@ -187,7 +187,7 @@ ob_start();
             <i class="fas fa-boxes"></i>
         </div>
         <div class="stat-info">
-            <h3><?php echo $inventoryStats['total'] ?? 0; ?></h3>
+            <h3><?php echo (!empty($inventoryStats['total']) ? $inventoryStats['total'] : 0); ?></h3>
             <p>Jenis Item</p>
         </div>
     </div>
@@ -196,7 +196,7 @@ ob_start();
             <i class="fas fa-cubes"></i>
         </div>
         <div class="stat-info">
-            <h3><?php echo $inventoryStats['total_stock'] ?? 0; ?></h3>
+            <h3><?php echo (!empty($inventoryStats['total_stock']) ? $inventoryStats['total_stock'] : 0); ?></h3>
             <p>Jumlah Stok</p>
         </div>
     </div>
@@ -255,11 +255,11 @@ ob_start();
                 <?php foreach ($pendingLoans as $loan): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($loan['user_name']); ?></td>
-                    <td><?php echo htmlspecialchars($loan['matrix_no'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(!empty($loan['matrix_no']) ? $loan['matrix_no'] : '-'); ?></td>
                     <td><?php echo htmlspecialchars($loan['item_name']); ?></td>
                     <td><?php echo $loan['quantity']; ?> <?php echo $loan['unit']; ?></td>
                     <td><?php echo formatDate($loan['borrow_date']); ?></td>
-                    <td><?php echo htmlspecialchars($loan['notes'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(!empty($loan['notes']) ? $loan['notes'] : '-'); ?></td>
                     <td>
                         <form method="POST" style="display: inline;">
                             <input type="hidden" name="loan_id" value="<?php echo $loan['id']; ?>">
@@ -311,7 +311,7 @@ ob_start();
                 <?php foreach ($activeLoans as $loan): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($loan['user_name']); ?></td>
-                    <td><?php echo htmlspecialchars($loan['matrix_no'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(!empty($loan['matrix_no']) ? $loan['matrix_no'] : '-'); ?></td>
                     <td><?php echo htmlspecialchars($loan['item_name']); ?></td>
                     <td><?php echo $loan['quantity']; ?> <?php echo $loan['unit']; ?></td>
                     <td><?php echo formatDate($loan['borrow_date']); ?></td>
@@ -368,7 +368,7 @@ ob_start();
                 ?>
                 <tr>
                     <td><?php echo htmlspecialchars($item['name']); ?></td>
-                    <td><?php echo htmlspecialchars($item['category_name'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars(!empty($item['category_name']) ? $item['category_name'] : '-'); ?></td>
                     <td><?php echo $item['stock_quantity']; ?></td>
                     <td><?php echo $item['minimum_stock']; ?></td>
                     <td><?php echo $item['unit']; ?></td>
