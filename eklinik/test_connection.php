@@ -30,17 +30,16 @@ if (isset($conn) && $conn) {
         
         // List all users
         echo "<h3>All Users:</h3>";
-        $result = $conn->query("SELECT id, name, email, matrix_no, role, password FROM users");
+        $result = $conn->query("SELECT id, name, email, matrix_no, role FROM users");
         echo "<table border='1' cellpadding='10' style='border-collapse: collapse;'>";
-        echo "<tr><th>ID</th><th>Name</th><th>Email</th><th>Matrix No</th><th>Role</th><th>Password</th></tr>";
+        echo "<tr><th>ID</th><th>Name</th><th>Email</th><th>Matrix No</th><th>Role</th></tr>";
         while ($user = $result->fetch_assoc()) {
             echo "<tr>";
             echo "<td>{$user['id']}</td>";
-            echo "<td>{$user['name']}</td>";
-            echo "<td>{$user['email'] ?? '-'}</td>";
-            echo "<td>{$user['matrix_no'] ?? '-'}</td>";
-            echo "<td>{$user['role']}</td>";
-            echo "<td>{$user['password']}</td>";
+            echo "<td>" . htmlspecialchars($user['name'] ?? '', ENT_QUOTES, 'UTF-8') . "</td>";
+            echo "<td>" . htmlspecialchars($user['email'] ?? '-', ENT_QUOTES, 'UTF-8') . "</td>";
+            echo "<td>" . htmlspecialchars($user['matrix_no'] ?? '-', ENT_QUOTES, 'UTF-8') . "</td>";
+            echo "<td>" . htmlspecialchars($user['role'] ?? '', ENT_QUOTES, 'UTF-8') . "</td>";
             echo "</tr>";
         }
         echo "</table>";
