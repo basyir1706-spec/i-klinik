@@ -30,17 +30,18 @@ if (isset($conn) && $conn) {
         
         // List all users
         echo "<h3>All Users:</h3>";
-        $result = $conn->query("SELECT id, name, email, matrix_no, role, password FROM users");
+        $result = $conn->query("SELECT id, name, email, matrix_no, role FROM users");
         echo "<table border='1' cellpadding='10' style='border-collapse: collapse;'>";
-        echo "<tr><th>ID</th><th>Name</th><th>Email</th><th>Matrix No</th><th>Role</th><th>Password</th></tr>";
+        echo "<tr><th>ID</th><th>Name</th><th>Email</th><th>Matrix No</th><th>Role</th></tr>";
         while ($user = $result->fetch_assoc()) {
+            $email = isset($user['email']) ? $user['email'] : '-';
+            $matrix_no = isset($user['matrix_no']) ? $user['matrix_no'] : '-';
             echo "<tr>";
-            echo "<td>{$user['id']}</td>";
-            echo "<td>{$user['name']}</td>";
-            echo "<td>{$user['email'] ?? '-'}</td>";
-            echo "<td>{$user['matrix_no'] ?? '-'}</td>";
-            echo "<td>{$user['role']}</td>";
-            echo "<td>{$user['password']}</td>";
+            echo "<td>" . htmlspecialchars($user['id'], ENT_QUOTES, 'UTF-8') . "</td>";
+            echo "<td>" . htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8') . "</td>";
+            echo "<td>" . htmlspecialchars($email, ENT_QUOTES, 'UTF-8') . "</td>";
+            echo "<td>" . htmlspecialchars($matrix_no, ENT_QUOTES, 'UTF-8') . "</td>";
+            echo "<td>" . htmlspecialchars($user['role'], ENT_QUOTES, 'UTF-8') . "</td>";
             echo "</tr>";
         }
         echo "</table>";
@@ -64,9 +65,11 @@ echo "<p style='color: blue;'>PHP Version: " . phpversion() . "</p>";
 
 // Test 5: BASE_URL Test
 echo "<h2>5. Base URL Test</h2>";
-$base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]/eklinik";
-echo "<p>Your BASE_URL should be: <code>$base_url</code></p>";
-echo "<p>Current URL: <code>" . (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]</code></p>";
+$http_host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+$request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+$base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$http_host/eklinik";
+echo "<p>Your BASE_URL should be: <code>" . htmlspecialchars($base_url, ENT_QUOTES, 'UTF-8') . "</code></p>";
+echo "<p>Current URL: <code>" . htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$http_host$request_uri", ENT_QUOTES, 'UTF-8') . "</code></p>";
 
 echo "<hr>";
 echo "<h2>Test Login Credentials:</h2>";
