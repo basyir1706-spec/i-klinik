@@ -101,8 +101,9 @@ ini_set('display_errors', 1);
         <?php
         // Check 2: MySQL Connection
         $mysqlOk = false;
+        mysqli_report(MYSQLI_REPORT_OFF);
         $conn = @new mysqli('localhost', 'root', '');
-        if ($conn && !$conn->connect_error) {
+        if ($conn && empty($conn->connect_error)) {
             $mysqlOk = true;
         }
         ?>
